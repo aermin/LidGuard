@@ -25,72 +25,15 @@ LidGuard 只管理“合盖后是否继续运行”，不接管屏幕或改动�
 > [!WARNING]
 > 在保护套、背包或其他密闭空间内运行 Mac 可能积热。LidGuard 提供热状态保护，但不能消除物理散热风险；完全手动且不限时运行需要二次确认。
 
-## 界面
-
-<p align="center">
-  <img src="docs/assets/lidguard-expanded.png" alt="LidGuard 完整展开控制面板" width="560">
-</p>
-
-<p align="center"><sub>完整展开面板：模式切换、设备状态、当前会话、保护策略、运行时长和低电量阈值集中在一个菜单中。</sub></p>
-
-低电量阈值可直接在保护策略中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
-
-<table>
-  <tr>
-    <td align="center"><strong>合盖运行</strong></td>
-    <td align="center"><strong>正常合盖休眠</strong></td>
-  </tr>
-  <tr>
-    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard 合盖运行界面" width="360"></td>
-    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard 正常合盖休眠界面" width="360"></td>
-  </tr>
-  <tr>
-    <td>显示当前策略、时长、低电量阈值、热状态和供电方式。</td>
-    <td>不显示无意义的保护倒计时，需要时再展开合盖运行配置。</td>
-  </tr>
-</table>
-
-## 为什么做 LidGuard
-
-通用防休眠工具通常同时影响显示器、系统空闲休眠或其他电源行为。对于远程控制和 Agent 场景，真正需要的是一个边界清晰、容易恢复的开关：
-
-| 目标 | LidGuard 的处理 |
-| --- | --- |
-| 合盖后任务继续执行 | 只切换系统 `SleepDisabled` 状态 |
-| 远程桌面继续可见、可控 | 不创建显示器防休眠断言或虚拟显示器 |
-| App 退出后保护仍生效 | 定时和保护策略由 LaunchDaemon helper 持久执行 |
-| 不想每次输入管理员密码 | 首次安装 helper 时授权一次，之后通过受限 XPC 调用 |
-| 发生低电量或过热 | 自动恢复 `disablesleep=0` 并记录停止原因 |
-| 外部工具修改电源状态 | 不反复争抢；结束会话或标记为外部管理状态 |
-
-## 三种保护策略
-
-| 策略 | 时长 | 低电量保护 | 热状态保护 | 适合场景 |
-| --- | --- | --- | --- | --- |
-| **严格** | 必须设置 30 分钟至 8 小时 | 固定 30% | `serious` / `critical` 自动恢复 | 临时离开、风险优先 |
-| **平衡** | 预设、自定义或不限时 | 默认 20%，可调 10%–50% | `serious` / `critical` 自动恢复 | 日常远控和 Agent 任务 |
-| **完全手动** | 预设、自定义或不限时 | 默认关闭，可手动启用 | `serious` 警告，`critical` 强制恢复 | 用户明确接管风险 |
-
-定时任务最长 7 天；到期前 5 分钟发送通知。低电量保护只在电池供电且未充电时触发。
-
-## 工作原理
-
-```mermaid
-flowchart LR
-    App["菜单栏 App"] -->|"start / stop / update / status"| XPC["受限 XPC 接口"]
-    CLI["lidguard CLI"] -->|"固定结构请求"| XPC
-    XPC --> Helper["root helper · LaunchDaemon"]
-    Helper --> Policy["定时 / 电量 / 热状态策略"]
-    Helper --> PM["pmset -a disablesleep 1 / 0"]
-    PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
-    Verify --> State["持久化状态与最后停止原因"]
-```
-
-Helper 只接受固定的 `start`、`stop`、`update` 和 `status` 操作，不接受任意命令字符串或文件路径。每次修改后都会读取 `pmset -g` 验证结果，失败时不会虚假显示“合盖运行中”。
-
-技术上，“合盖运行”和“正常休眠”分别执行 `pmset -a disablesleep 1` 和 `pmset -a disablesleep 0`。LidGuard 不创建虚拟显示器、不捕获屏幕、不修改 `sleep` / `displaysleep`，也不通过 `caffeinate` 添加额外睡眠断言。
-
 ## 快速开始
+
+### 日常使用
+
+1. 点击菜单栏中的 LidGuard 图标。
+2. 选择 **“合盖运行”**，设置保护策略和运行时长，然后点击 **“开始合盖运行”**。
+3. 不再需要保持运行时，选择 **“正常休眠”**，Mac 就会恢复默认的合盖睡眠行为。
+
+运行期间可以随时查看剩余时间、电量、供电方式和系统热状态，也可以调整当前会话的保护策略。
 
 ### 环境
 
@@ -120,6 +63,41 @@ make install
 安装后，日常切换模式不应再次要求管理员授权。
 
 本机 v1 使用临时签名，每次重新构建 App 都会产生新的代码哈希，因此执行 `make install` 更新开发版本时需要重新授权一次。LidGuard 会识别这种签名失配，并在主面板显示“重新授权 Helper”，不会把它误报为 helper 丢失。
+
+## 界面
+
+<p align="center">
+  <img src="docs/assets/lidguard-expanded.png" alt="LidGuard 完整展开控制面板" width="560">
+</p>
+
+<p align="center"><sub>完整展开面板：模式切换、设备状态、当前会话、保护策略、运行时长和低电量阈值集中在一个菜单中。</sub></p>
+
+低电量阈值可直接在保护策略中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
+
+<table>
+  <tr>
+    <td align="center"><strong>合盖运行</strong></td>
+    <td align="center"><strong>正常合盖休眠</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard 合盖运行界面" width="360"></td>
+    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard 正常合盖休眠界面" width="360"></td>
+  </tr>
+  <tr>
+    <td>显示当前策略、时长、低电量阈值、热状态和供电方式。</td>
+    <td>不显示无意义的保护倒计时，需要时再展开合盖运行配置。</td>
+  </tr>
+</table>
+
+## 三种保护策略
+
+| 策略 | 时长 | 低电量保护 | 热状态保护 | 适合场景 |
+| --- | --- | --- | --- | --- |
+| **严格** | 必须设置 30 分钟至 8 小时 | 固定 30% | `serious` / `critical` 自动恢复 | 临时离开、风险优先 |
+| **平衡** | 预设、自定义或不限时 | 默认 20%，可调 10%–50% | `serious` / `critical` 自动恢复 | 日常远控和 Agent 任务 |
+| **完全手动** | 预设、自定义或不限时 | 默认关闭，可手动启用 | `serious` 警告，`critical` 强制恢复 | 用户明确接管风险 |
+
+定时任务最长 7 天；到期前 5 分钟发送通知。低电量保护只在电池供电且未充电时触发。
 
 ## CLI
 
@@ -180,6 +158,19 @@ lidguard doctor
 
 LidGuard 不安装 Codex hooks。Agent 需要显式调用 CLI，不会因为任务开始或结束自动改变整台 Mac 的电源状态。
 
+## 为什么做 LidGuard
+
+通用防休眠工具通常同时影响显示器、系统空闲休眠或其他电源行为。对于远程控制和 Agent 场景，真正需要的是一个边界清晰、容易恢复的开关：
+
+| 目标 | LidGuard 的处理 |
+| --- | --- |
+| 合盖后任务继续执行 | 只切换系统 `SleepDisabled` 状态 |
+| 远程桌面继续可见、可控 | 不创建显示器防休眠断言或虚拟显示器 |
+| App 退出后保护仍生效 | 定时和保护策略由 LaunchDaemon helper 持久执行 |
+| 不想每次输入管理员密码 | 首次安装 helper 时授权一次，之后通过受限 XPC 调用 |
+| 发生低电量或过热 | 自动恢复 `disablesleep=0` 并记录停止原因 |
+| 外部工具修改电源状态 | 不反复争抢；结束会话或标记为外部管理状态 |
+
 ## 安全边界
 
 - Helper 运行于 root，但只暴露四类结构化操作。
@@ -230,3 +221,20 @@ LidGuardHelperKit  电源控制、传感器、状态持久化和策略引擎
 LidGuardCLI        lidguard 命令行工具
 LidGuardTests      无副作用的策略与 helper 测试
 ```
+
+## 工作原理
+
+```mermaid
+flowchart LR
+    App["菜单栏 App"] -->|"start / stop / update / status"| XPC["受限 XPC 接口"]
+    CLI["lidguard CLI"] -->|"固定结构请求"| XPC
+    XPC --> Helper["root helper · LaunchDaemon"]
+    Helper --> Policy["定时 / 电量 / 热状态策略"]
+    Helper --> PM["pmset -a disablesleep 1 / 0"]
+    PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
+    Verify --> State["持久化状态与最后停止原因"]
+```
+
+Helper 只接受固定的 `start`、`stop`、`update` 和 `status` 操作，不接受任意命令字符串或文件路径。每次修改后都会读取 `pmset -g` 验证结果，失败时不会虚假显示“合盖运行中”。
+
+技术上，“合盖运行”和“正常休眠”分别执行 `pmset -a disablesleep 1` 和 `pmset -a disablesleep 0`。LidGuard 不创建虚拟显示器、不捕获屏幕、不修改 `sleep` / `displaysleep`，也不通过 `caffeinate` 添加额外睡眠断言。
