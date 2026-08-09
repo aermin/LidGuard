@@ -1,5 +1,7 @@
 <div align="center">
 
+**简体中文** · [English](README.en.md)
+
 # LidGuard · 合盖守护
 
 **出门要合上 Mac，但 Codex 等本地 Agent 和手机远控不该被迫中断。LidGuard 让它在保护策略下继续工作。**
