@@ -19,9 +19,7 @@ struct MenuContentView: View {
                     if !isEditingProtection {
                         store.prepareCurrentSessionForEditing()
                     }
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        isEditingProtection.toggle()
-                    }
+                    isEditingProtection.toggle()
                 } label: {
                     HStack {
                         Label("调整保护策略", systemImage: "slider.horizontal.3")
@@ -39,15 +37,12 @@ struct MenuContentView: View {
                     ) {
                         store.applySelectedSession()
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             } else {
                 normalSleepSummary
 
                 Button {
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        isConfiguringRun.toggle()
-                    }
+                    isConfiguringRun.toggle()
                 } label: {
                     HStack {
                         Label(
@@ -68,7 +63,6 @@ struct MenuContentView: View {
                     ) {
                         store.startSelectedSession()
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
 
@@ -124,9 +118,7 @@ struct MenuContentView: View {
                     tint: .green
                 ) {
                     guard store.status?.mode != .active else { return }
-                    withAnimation(.easeInOut(duration: 0.18)) {
-                        isConfiguringRun = true
-                    }
+                    isConfiguringRun = true
                 }
                 modeButton(
                     title: "正常休眠",
