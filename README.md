@@ -17,10 +17,10 @@
 
 LidGuard 让你主动选择 Mac 合盖后的行为：需要继续工作时保持运行，并通过定时、低电量和系统热状态保护，在触发条件后自动恢复正常休眠。它提供两个明确状态：
 
-- **合盖运行**：设置 `pmset -a disablesleep 1`，并由 helper 持续执行保护策略。
-- **正常休眠**：设置 `pmset -a disablesleep 0`，把睡眠控制权交还 macOS。
+- **合盖运行**：合上屏幕后，Agent、任务和远程连接继续运行，同时启用你选择的保护策略。
+- **正常休眠**：恢复 Mac 默认行为，合盖后正常进入睡眠。
 
-它不会创建虚拟显示器、捕获屏幕、修改 `sleep` / `displaysleep`，也不会通过 `caffeinate` 添加额外睡眠断言。
+LidGuard 只管理“合盖后是否继续运行”，不接管屏幕或改动其他睡眠设置。
 
 > [!WARNING]
 > 在保护套、背包或其他密闭空间内运行 Mac 可能积热。LidGuard 提供热状态保护，但不能消除物理散热风险；完全手动且不限时运行需要二次确认。
@@ -87,6 +87,8 @@ flowchart LR
 ```
 
 Helper 只接受固定的 `start`、`stop`、`update` 和 `status` 操作，不接受任意命令字符串或文件路径。每次修改后都会读取 `pmset -g` 验证结果，失败时不会虚假显示“合盖运行中”。
+
+技术上，“合盖运行”和“正常休眠”分别执行 `pmset -a disablesleep 1` 和 `pmset -a disablesleep 0`。LidGuard 不创建虚拟显示器、不捕获屏幕、不修改 `sleep` / `displaysleep`，也不通过 `caffeinate` 添加额外睡眠断言。
 
 ## 快速开始
 
