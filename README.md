@@ -119,6 +119,37 @@ make install
 
 ## CLI
 
+### 安装 CLI
+
+CLI 不需要单独安装。完成上面的源码安装即可：
+
+```bash
+git clone https://github.com/aermin/LidGuard.git
+cd LidGuard
+make install
+```
+
+`make install` 会同时安装菜单栏 App、受限 helper 和 CLI，并将 CLI 放到：
+
+```text
+/usr/local/bin/lidguard
+```
+
+安装完成后可以这样确认：
+
+```bash
+command -v lidguard
+lidguard doctor
+lidguard status
+```
+
+如果终端提示 `command not found`，先直接执行 `/usr/local/bin/lidguard doctor`。若直接执行可用，请确认 shell 的 `PATH` 包含 `/usr/local/bin`。
+
+> [!NOTE]
+> 不建议只从构建目录复制 CLI。CLI 需要与 helper 一同安装，并由安装流程登记代码签名要求；更新源码版本时也应重新执行 `make install`。
+
+### 使用
+
 ```bash
 # 查看当前模式、供电、热状态和保护策略
 lidguard status
