@@ -2,7 +2,7 @@
 
 # LidGuard · 合盖守护
 
-**让 Mac 在合盖时按你的规则继续运行，并在定时、低电量或过热时自动恢复休眠。**
+**出门要合上 Mac，但 Codex 等本地 Agent 和手机远控不该被迫中断。LidGuard 让它在保护策略下继续工作。**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
@@ -13,7 +13,9 @@
 
 </div>
 
-LidGuard 面向需要让 **Codex、下载任务、构建任务或远程控制软件** 在 Mac 合盖后继续工作的场景。它提供两个明确状态：
+准备出门时，你可能必须合上 Mac 放进保护套或背包，但 **Codex 等本地 Agent、下载或构建任务仍在执行**；也可能把 Mac 留在家里或工位，希望继续通过手机远程查看和操作。macOS 默认会在合盖后进入睡眠，这些任务和远程连接也会随之停止。
+
+LidGuard 让你主动选择 Mac 合盖后的行为：需要继续工作时保持运行，并通过定时、低电量和系统热状态保护，在触发条件后自动恢复正常休眠。它提供两个明确状态：
 
 - **合盖运行**：设置 `pmset -a disablesleep 1`，并由 helper 持续执行保护策略。
 - **正常休眠**：设置 `pmset -a disablesleep 0`，把睡眠控制权交还 macOS。
