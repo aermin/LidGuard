@@ -53,6 +53,7 @@ final class AppStore: ObservableObject {
     @Published var manualBatteryProtection = false
     @Published var manualRiskConfirmationPending = false
     @Published var isWorking = false
+    @Published private(set) var helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
     @AppStorage("balancedBatteryThreshold") var balancedBatteryThreshold = 20
     @AppStorage("launchAtLogin") var launchAtLogin = true
 
@@ -73,6 +74,27 @@ final class AppStore: ObservableObject {
             return now.addingTimeInterval(30 * 60)...now.addingTimeInterval(8 * 60 * 60)
         }
         return now.addingTimeInterval(60)...now.addingTimeInterval(7 * 24 * 60 * 60)
+    }
+
+    var helperRepairRequired: Bool {
+        helperAuthorizationStatus == .missing || helperAuthorizationStatus == .outdated
+    }
+
+    var helperRepairActionTitle: String {
+        switch helperAuthorizationStatus {
+        case .missing: return "安装 Helper"
+        case .outdated: return "重新授权 Helper"
+        case .current, .unknown: return "修复 Helper 与 CLI"
+        }
+    }
+
+    var helperAuthorizationDisplayName: String {
+        switch helperAuthorizationStatus {
+        case .current: return "可用"
+        case .missing: return "未安装"
+        case .outdated: return "需重新授权"
+        case .unknown: return "状态未知"
+        }
     }
 
     init() {
@@ -98,15 +120,25 @@ final class AppStore: ObservableObject {
     }
 
     func refresh() async {
+        if helperAuthorizationStatus != .current {
+            helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
+            if let message = helperAuthorizationMessage {
+                status = nil
+                errorMessage = message
+                return
+            }
+        }
         do {
             let snapshot = try await Task.detached {
                 try HelperClient().fetchStatus()
             }.value
             status = snapshot
             errorMessage = snapshot.lastError
+            helperAuthorizationStatus = .current
             processEvent(snapshot.lastEvent)
         } catch {
-            errorMessage = error.localizedDescription
+            helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
+            errorMessage = helperAuthorizationMessage ?? error.localizedDescription
         }
     }
 
@@ -204,11 +236,20 @@ final class AppStore: ObservableObject {
     }
 
     func repairHelper() {
-        do {
-            try InstallerManager.repairHelper()
-            Task { await refresh() }
-        } catch {
-            errorMessage = error.localizedDescription
+        guard !isWorking else { return }
+        isWorking = true
+        Task {
+            do {
+                try await Task.detached {
+                    try InstallerManager.repairHelper()
+                }.value
+                helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
+                errorMessage = nil
+                await refresh()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isWorking = false
         }
     }
 
@@ -217,6 +258,7 @@ final class AppStore: ObservableObject {
             try? LaunchAtLoginManager.disable()
             try InstallerManager.uninstallHelper()
             status = nil
+            helperAuthorizationStatus = .missing
             Task { await refresh() }
         } catch {
             errorMessage = error.localizedDescription
@@ -257,5 +299,16 @@ final class AppStore: ObservableObject {
             body: event.message,
             identifier: event.id.uuidString
         )
+    }
+
+    private var helperAuthorizationMessage: String? {
+        switch helperAuthorizationStatus {
+        case .current, .unknown:
+            return nil
+        case .missing:
+            return "Helper 未安装，请先安装 Helper 与 CLI。"
+        case .outdated:
+            return "App 已更新，需要重新授权 Helper 后才能通信。"
+        }
     }
 }

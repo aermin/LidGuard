@@ -79,6 +79,17 @@ struct MenuContentView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            if store.helperRepairRequired {
+                Button {
+                    store.repairHelper()
+                } label: {
+                    Label(store.helperRepairActionTitle, systemImage: "wrench.and.screwdriver")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(store.isWorking)
+            }
+
             Divider()
             HStack {
                 Button("设置") { openSettingsWindow() }
@@ -165,7 +176,12 @@ struct MenuContentView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
-        .disabled(store.isWorking || !InstallerManager.isHelperInstalled || store.status?.mode == .error)
+        .disabled(
+            store.isWorking
+                || store.helperRepairRequired
+                || store.status == nil
+                || store.status?.mode == .error
+        )
     }
 
     private var statusHeader: some View {
@@ -272,7 +288,7 @@ struct MenuContentView: View {
             Button(actionTitle, action: action)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(store.isWorking || !InstallerManager.isHelperInstalled)
+                .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
                 .frame(maxWidth: .infinity)
         }
     }
@@ -405,9 +421,10 @@ struct SettingsContentView: View {
             }
 
             Section("组件") {
-                LabeledContent("Helper", value: InstallerManager.isHelperInstalled ? "已安装" : "未安装")
+                LabeledContent("Helper", value: store.helperAuthorizationDisplayName)
                 LabeledContent("CLI", value: FileManager.default.fileExists(atPath: LidGuardConstants.cliPath) ? "已安装" : "未安装")
-                Button("修复 Helper 与 CLI") { store.repairHelper() }
+                Button(store.helperRepairActionTitle) { store.repairHelper() }
+                    .disabled(store.isWorking)
                 Button("恢复休眠并卸载 Helper", role: .destructive) { confirmUninstall = true }
             }
 
