@@ -114,6 +114,24 @@ runner.run("balanced defaults to twenty percent") {
     try runner.expect(session.batteryThreshold == 20, "Balanced threshold must default to 20")
 }
 
+runner.run("balanced accepts custom battery threshold") {
+    let session = try SessionPolicy.makeSession(
+        from: SessionRequest(profile: .balanced, deadline: nil, batteryThreshold: 35)
+    )
+    try runner.expect(session.batteryThreshold == 35, "Balanced threshold must preserve selection")
+}
+
+runner.run("manual accepts enabled battery threshold") {
+    let session = try SessionPolicy.makeSession(
+        from: SessionRequest(
+            profile: .manual,
+            deadline: Date().addingTimeInterval(60 * 60),
+            batteryThreshold: 25
+        )
+    )
+    try runner.expect(session.batteryThreshold == 25, "Manual threshold must preserve selection")
+}
+
 runner.run("manual unlimited requires confirmation") {
     try runner.expectThrows(PolicyError.manualUnlimitedRiskNotConfirmed) {
         _ = try SessionPolicy.makeSession(from: SessionRequest(profile: .manual, deadline: nil))

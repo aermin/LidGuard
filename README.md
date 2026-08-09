@@ -7,7 +7,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 14 passing](https://img.shields.io/badge/tests-14%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
 
 轻量菜单栏 App · 受限 root helper · CLI · 不接管显示器 · 不安装 Agent hooks
 
@@ -24,6 +24,14 @@ LidGuard 面向需要让 **Codex、下载任务、构建任务或远程控制软
 > 在保护套、背包或其他密闭空间内运行 Mac 可能积热。LidGuard 提供热状态保护，但不能消除物理散热风险；完全手动且不限时运行需要二次确认。
 
 ## 界面
+
+<p align="center">
+  <img src="docs/assets/lidguard-expanded.png" alt="LidGuard 完整展开控制面板" width="560">
+</p>
+
+<p align="center"><sub>完整展开面板：模式切换、设备状态、当前会话、保护策略、运行时长和低电量阈值集中在一个菜单中。</sub></p>
+
+低电量阈值可直接在保护策略中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
 
 <table>
   <tr>
@@ -150,7 +158,7 @@ LidGuard 不安装 Codex hooks。Agent 需要显式调用 CLI，不会因为任�
 自动测试覆盖策略矩阵、定时解析、低电量、四级热状态、状态恢复、外部覆盖和 `pmset` 回读错误，测试使用假的电源控制器与传感器，不会在测试期间真实修改系统电源状态。
 
 ```text
-Tests: 14 passed, 0 failed
+Tests: 16 passed, 0 failed
 ```
 
 当前实机已验证：

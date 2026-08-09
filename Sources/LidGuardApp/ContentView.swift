@@ -262,9 +262,7 @@ struct MenuContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if store.selectedProfile == .manual {
-                Toggle("启用低电量保护", isOn: $store.manualBatteryProtection)
-            }
+            batteryProtectionControls
 
             Text(profileDescription)
                 .font(.caption)
@@ -277,6 +275,30 @@ struct MenuContentView: View {
                 .disabled(store.isWorking || !InstallerManager.isHelperInstalled)
                 .frame(maxWidth: .infinity)
         }
+    }
+
+    @ViewBuilder
+    private var batteryProtectionControls: some View {
+        switch store.selectedProfile {
+        case .strict:
+            LabeledContent("低电量保护", value: "固定 30%")
+        case .balanced:
+            batteryThresholdStepper
+        case .manual:
+            Toggle("启用低电量保护", isOn: $store.manualBatteryProtection)
+            if store.manualBatteryProtection {
+                batteryThresholdStepper
+            }
+        }
+    }
+
+    private var batteryThresholdStepper: some View {
+        Stepper(
+            "低电量阈值：\(store.balancedBatteryThreshold)%",
+            value: $store.balancedBatteryThreshold,
+            in: LidGuardConstants.minimumBatteryThreshold...LidGuardConstants.maximumBatteryThreshold,
+            step: 5
+        )
     }
 
     private var durationExplanation: String {
@@ -375,9 +397,9 @@ struct SettingsContentView: View {
                     )
                 )
                 Stepper(
-                    "平衡模式低电量阈值：\(store.balancedBatteryThreshold)%",
+                    "默认低电量阈值：\(store.balancedBatteryThreshold)%",
                     value: $store.balancedBatteryThreshold,
-                    in: 10...50,
+                    in: LidGuardConstants.minimumBatteryThreshold...LidGuardConstants.maximumBatteryThreshold,
                     step: 5
                 )
             }

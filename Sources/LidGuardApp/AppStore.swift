@@ -129,6 +129,9 @@ final class AppStore: ObservableObject {
             durationChoice = .unlimited
         }
         manualBatteryProtection = session.batteryThreshold != nil
+        if session.profile != .strict, let threshold = session.batteryThreshold {
+            balancedBatteryThreshold = threshold
+        }
     }
 
     func normalizeSelectionForProfile() {
