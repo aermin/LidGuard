@@ -86,10 +86,10 @@ make dmg
 ## 界面
 
 <p align="center">
-  <img src="docs/assets/lidguard-expanded.png" alt="LidGuard 完整展开控制面板" width="560">
+  <img src="docs/assets/lidguard-expanded.png" alt="从菜单栏打开并展开保护策略的 LidGuard" width="560">
 </p>
 
-<p align="center"><sub>完整展开面板：模式选择、设备状态、会话详情、保护策略、运行时长和低电量阈值集中在一个菜单中。</sub></p>
+<p align="center"><sub>点击菜单栏中的 LidGuard 图标，即可查看运行模式、设备状态、会话详情、时长和保护策略。</sub></p>
 
 低电量阈值可直接在保护策略面板中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
 
@@ -99,8 +99,8 @@ make dmg
     <td align="center"><strong>正常合盖休眠</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard 合盖运行界面" width="360"></td>
-    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard 正常合盖休眠界面" width="360"></td>
+    <td><img src="docs/assets/lidguard-active.png" alt="菜单栏 LidGuard 的合盖运行界面" width="360"></td>
+    <td><img src="docs/assets/lidguard-normal.png" alt="菜单栏 LidGuard 的正常合盖休眠界面" width="360"></td>
   </tr>
   <tr>
     <td>显示当前策略、时长、低电量阈值、热状态和供电方式。</td>

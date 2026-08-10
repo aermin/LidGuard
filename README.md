@@ -86,10 +86,10 @@ The output is `dist/LidGuard-1.0.0-arm64.dmg`. Local test DMGs use ad-hoc signin
 ## Interface
 
 <p align="center">
-  <img src="docs/assets/lidguard-expanded-en.png" alt="Expanded LidGuard control panel" width="560">
+  <img src="docs/assets/lidguard-expanded-en.png" alt="LidGuard menu bar app with the safeguards panel expanded" width="560">
 </p>
 
-<p align="center"><sub>The expanded panel puts mode selection, device status, session details, safeguards, duration, and the low-battery threshold in one menu.</sub></p>
+<p align="center"><sub>Click the LidGuard menu bar icon to open mode selection, device status, session details, duration, and safeguards.</sub></p>
 
 The low-battery threshold can be changed directly in the safeguards panel. Strict uses a fixed 30% threshold, Balanced allows 10%–50%, and Manual exposes the same control when low-battery protection is enabled.
 
@@ -99,8 +99,8 @@ The low-battery threshold can be changed directly in the safeguards panel. Stric
     <td align="center"><strong>Normal Lid Sleep</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/assets/lidguard-active-en.png" alt="LidGuard active session" width="360"></td>
-    <td><img src="docs/assets/lidguard-normal-en.png" alt="LidGuard normal sleep mode" width="360"></td>
+    <td><img src="docs/assets/lidguard-active-en.png" alt="LidGuard menu bar app with an active lid-closed session" width="360"></td>
+    <td><img src="docs/assets/lidguard-normal-en.png" alt="LidGuard menu bar app in normal lid sleep mode" width="360"></td>
   </tr>
   <tr>
     <td>Shows the current profile, duration, low-battery threshold, thermal state, and power source.</td>

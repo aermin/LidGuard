@@ -10,9 +10,183 @@ private enum Palette {
     static let blue = Color(red: 0.0, green: 0.48, blue: 1.0)
 }
 
+private struct Copy {
+    let activeTitle: String
+    let activeSubtitle: String
+    let normalTitle: String
+    let normalSubtitle: String
+    let runMode: String
+    let keepRunning: String
+    let keepRunningSubtitle: String
+    let normalSleep: String
+    let normalSleepSubtitle: String
+    let thermal: String
+    let thermalNormal: String
+    let battery: String
+    let power: String
+    let acPower: String
+    let balanced: String
+    let noTimeLimit: String
+    let lowBatteryThreshold: String
+    let adjustSafeguards: String
+    let settings: String
+    let refresh: String
+    let quit: String
+    let currentSafeguards: String
+    let changesImmediately: String
+    let strict: String
+    let manual: String
+    let duration: String
+    let unlimitedHint: String
+    let thresholdHint: String
+    let applyChanges: String
+    let normalBehavior: String
+    let noActiveSession: String
+    let setUpMode: String
+
+    static let english = Copy(
+        activeTitle: "Running with Lid Closed",
+        activeSubtitle: "Balanced safeguards are active",
+        normalTitle: "Normal Lid Sleep",
+        normalSubtitle: "macOS will sleep when the lid closes",
+        runMode: "RUN MODE",
+        keepRunning: "Keep Running",
+        keepRunningSubtitle: "Work stays active",
+        normalSleep: "Normal Sleep",
+        normalSleepSubtitle: "Sleeps on close",
+        thermal: "THERMAL",
+        thermalNormal: "Normal",
+        battery: "BATTERY",
+        power: "POWER",
+        acPower: "AC Power",
+        balanced: "Balanced",
+        noTimeLimit: "No time limit",
+        lowBatteryThreshold: "Low-battery threshold",
+        adjustSafeguards: "Adjust Safeguards",
+        settings: "Settings",
+        refresh: "Refresh",
+        quit: "Quit",
+        currentSafeguards: "CURRENT SESSION SAFEGUARDS",
+        changesImmediately: "Changes take effect immediately.",
+        strict: "Strict",
+        manual: "Manual",
+        duration: "Duration",
+        unlimitedHint: "Keeps running until you restore normal lid sleep.",
+        thresholdHint: "Adjustable threshold. Serious thermal pressure automatically restores normal sleep.",
+        applyChanges: "Apply Changes",
+        normalBehavior: "Normal macOS sleep behavior",
+        noActiveSession: "No LidGuard session or safeguards are active.",
+        setUpMode: "Set Up Lid-Closed Mode"
+    )
+
+    static let chinese = Copy(
+        activeTitle: "合盖运行中",
+        activeSubtitle: "已开启平衡模式的合盖运行",
+        normalTitle: "正常合盖休眠",
+        normalSubtitle: "合盖后由 macOS 正常进入休眠",
+        runMode: "运行模式",
+        keepRunning: "合盖运行",
+        keepRunningSubtitle: "持续远控",
+        normalSleep: "正常休眠",
+        normalSleepSubtitle: "恢复系统默认",
+        thermal: "热状态",
+        thermalNormal: "正常",
+        battery: "电量",
+        power: "供电",
+        acPower: "电源",
+        balanced: "平衡",
+        noTimeLimit: "不限时运行",
+        lowBatteryThreshold: "低电量保护",
+        adjustSafeguards: "调整保护策略",
+        settings: "设置",
+        refresh: "刷新",
+        quit: "退出",
+        currentSafeguards: "当前会话保护策略",
+        changesImmediately: "修改后立即生效。",
+        strict: "严格",
+        manual: "完全手动",
+        duration: "运行时长",
+        unlimitedHint: "持续运行，直到手动恢复正常休眠。",
+        thresholdHint: "可调整阈值；系统热压力严重时自动恢复正常休眠。",
+        applyChanges: "应用修改",
+        normalBehavior: "正常 macOS 合盖休眠",
+        noActiveSession: "当前没有 LidGuard 会话或保护策略。",
+        setUpMode: "设置合盖运行"
+    )
+}
+
+private struct MenuBar: View {
+    let active: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "apple.logo")
+                .font(.system(size: 12, weight: .semibold))
+            Text("Finder")
+                .font(.system(size: 11, weight: .semibold))
+            Spacer()
+            HStack(spacing: 11) {
+                Image(systemName: "laptopcomputer.and.arrow.down")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(active ? Palette.green : .white)
+                    .padding(.horizontal, 8)
+                    .frame(height: 24)
+                    .background(Color.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 6))
+                Image(systemName: "wifi")
+                Image(systemName: "battery.100percent")
+                Text("10:08")
+                    .font(.system(size: 10.5, weight: .medium))
+            }
+            .font(.system(size: 11, weight: .medium))
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .background(Color.black.opacity(0.88))
+    }
+}
+
+private struct MenuBarScene<Content: View>: View {
+    let active: Bool
+    let content: Content
+
+    init(active: Bool, @ViewBuilder content: () -> Content) {
+        self.active = active
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            MenuBar(active: active)
+            ZStack(alignment: .topTrailing) {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.09, green: 0.11, blue: 0.15),
+                        Color(red: 0.055, green: 0.07, blue: 0.1),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+
+                content
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.white.opacity(0.16), lineWidth: 0.75)
+                    }
+                    .shadow(color: .black.opacity(0.55), radius: 18, x: 0, y: 10)
+                    .padding(.top, 8)
+                    .padding(.trailing, 10)
+                    .padding(.bottom, 22)
+            }
+        }
+        .frame(width: 400)
+    }
+}
+
 private struct Header: View {
     let active: Bool
-    let subtitle: String
+    let copy: Copy
 
     var body: some View {
         HStack(spacing: 12) {
@@ -21,11 +195,11 @@ private struct Header: View {
                 .foregroundStyle(active ? Palette.green : .secondary)
                 .frame(width: 48)
             VStack(alignment: .leading, spacing: 2) {
-                Text(active ? "Running with Lid Closed" : "Normal Lid Sleep")
+                Text(active ? copy.activeTitle : copy.normalTitle)
                     .font(.headline)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
-                Text(subtitle)
+                Text(active ? copy.activeSubtitle : copy.normalSubtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -81,24 +255,25 @@ private struct ModeCard: View {
 private struct ModeSwitcher: View {
     let active: Bool
     let dark: Bool
+    let copy: Copy
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text("RUN MODE")
+            Text(copy.runMode)
                 .font(.system(size: 10.5, weight: .medium))
                 .foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 ModeCard(
-                    title: "Keep Running",
-                    subtitle: "Work stays active",
+                    title: copy.keepRunning,
+                    subtitle: copy.keepRunningSubtitle,
                     icon: "laptopcomputer.and.arrow.down",
                     selected: active,
                     tint: Palette.green,
                     dark: dark
                 )
                 ModeCard(
-                    title: "Normal Sleep",
-                    subtitle: "Sleeps on close",
+                    title: copy.normalSleep,
+                    subtitle: copy.normalSleepSubtitle,
                     icon: "moon.zzz",
                     selected: !active,
                     tint: Palette.blue,
@@ -134,12 +309,13 @@ private struct MetricCard: View {
 private struct Metrics: View {
     let battery: Int
     let dark: Bool
+    let copy: Copy
 
     var body: some View {
         HStack(spacing: 10) {
-            MetricCard(title: "THERMAL", value: "Normal", icon: "thermometer.medium", dark: dark)
-            MetricCard(title: "BATTERY", value: "\(battery)%", icon: "battery.75percent", dark: dark)
-            MetricCard(title: "POWER", value: "AC Power", icon: "powerplug", dark: dark)
+            MetricCard(title: copy.thermal, value: copy.thermalNormal, icon: "thermometer.medium", dark: dark)
+            MetricCard(title: copy.battery, value: "\(battery)%", icon: "battery.75percent", dark: dark)
+            MetricCard(title: copy.power, value: copy.acPower, icon: "powerplug", dark: dark)
         }
     }
 }
@@ -147,15 +323,16 @@ private struct Metrics: View {
 private struct ActiveSession: View {
     let threshold: Int
     let dark: Bool
+    let copy: Copy
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Label("Balanced", systemImage: "shield.checkered")
+            Label(copy.balanced, systemImage: "shield.checkered")
                 .font(.subheadline.weight(.semibold))
-            Text("No time limit")
+            Text(copy.noTimeLimit)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("Low-battery threshold: \(threshold)%")
+            Text("\(copy.lowBatteryThreshold): \(threshold)%")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -166,12 +343,14 @@ private struct ActiveSession: View {
 }
 
 private struct Footer: View {
+    let copy: Copy
+
     var body: some View {
         HStack {
-            Text("Settings")
+            Text(copy.settings)
             Spacer()
-            Text("Refresh")
-            Text("Quit")
+            Text(copy.refresh)
+            Text(copy.quit)
         }
         .font(.caption)
         .fontWeight(.medium)
@@ -182,17 +361,18 @@ private struct ActivePanel: View {
     let expanded: Bool
     let dark: Bool
     let threshold: Int
+    let copy: Copy
 
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
-            Header(active: true, subtitle: "Balanced safeguards are active")
-            ModeSwitcher(active: true, dark: dark)
+            Header(active: true, copy: copy)
+            ModeSwitcher(active: true, dark: dark, copy: copy)
             Divider()
-            Metrics(battery: 86, dark: dark)
-            ActiveSession(threshold: threshold, dark: dark)
+            Metrics(battery: 86, dark: dark, copy: copy)
+            ActiveSession(threshold: threshold, dark: dark, copy: copy)
 
             HStack {
-                Label("Adjust Safeguards", systemImage: "slider.horizontal.3")
+                Label(copy.adjustSafeguards, systemImage: "slider.horizontal.3")
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Image(systemName: expanded ? "chevron.up" : "chevron.down")
@@ -202,11 +382,11 @@ private struct ActivePanel: View {
             .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 8))
 
             if expanded {
-                ExpandedControls(threshold: threshold, dark: dark)
+                ExpandedControls(threshold: threshold, dark: dark, copy: copy)
             }
 
             Divider()
-            Footer()
+            Footer(copy: copy)
         }
         .padding(16)
         .frame(width: 360, height: expanded ? 639.5 : 395.5, alignment: .topLeading)
@@ -218,30 +398,31 @@ private struct ActivePanel: View {
 private struct ExpandedControls: View {
     let threshold: Int
     let dark: Bool
+    let copy: Copy
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("CURRENT SESSION SAFEGUARDS")
+                Text(copy.currentSafeguards)
                     .font(.system(size: 11.5, weight: .semibold))
-                Text("Changes take effect immediately.")
+                Text(copy.changesImmediately)
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
             }
 
             HStack(spacing: 0) {
-                Segment("Strict", selected: false, dark: dark)
-                Segment("Balanced", selected: true, dark: dark)
-                Segment("Manual", selected: false, dark: dark)
+                Segment(copy.strict, selected: false, dark: dark)
+                Segment(copy.balanced, selected: true, dark: dark)
+                Segment(copy.manual, selected: false, dark: dark)
             }
             .frame(height: 28)
             .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
 
             HStack {
-                Text("Duration")
+                Text(copy.duration)
                     .font(.system(size: 12, weight: .medium))
                 Spacer()
-                Text("No time limit")
+                Text(copy.noTimeLimit)
                     .font(.system(size: 12, weight: .semibold))
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption)
@@ -251,12 +432,12 @@ private struct ExpandedControls: View {
             .frame(height: 30)
             .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
 
-            Text("Keeps running until you restore normal lid sleep.")
+            Text(copy.unlimitedHint)
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
 
             HStack {
-                Text("Low-battery threshold")
+                Text(copy.lowBatteryThreshold)
                     .font(.system(size: 12.5, weight: .medium))
                 Spacer()
                 Text("\(threshold)%")
@@ -271,12 +452,12 @@ private struct ExpandedControls: View {
                 .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
             }
 
-            Text("Adjustable threshold. Serious thermal pressure automatically restores normal sleep.")
+            Text(copy.thresholdHint)
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Apply Changes")
+            Text(copy.applyChanges)
                 .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
@@ -308,17 +489,19 @@ private struct Segment: View {
 }
 
 private struct NormalPanel: View {
+    let copy: Copy
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Header(active: false, subtitle: "macOS will sleep when the lid closes")
-            ModeSwitcher(active: false, dark: false)
+            Header(active: false, copy: copy)
+            ModeSwitcher(active: false, dark: false, copy: copy)
             Divider()
-            Metrics(battery: 86, dark: false)
+            Metrics(battery: 86, dark: false, copy: copy)
 
             VStack(alignment: .leading, spacing: 5) {
-                Label("Normal macOS sleep behavior", systemImage: "checkmark.shield")
+                Label(copy.normalBehavior, systemImage: "checkmark.shield")
                     .font(.system(size: 12.5, weight: .semibold))
-                Text("No LidGuard session or safeguards are active.")
+                Text(copy.noActiveSession)
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -328,7 +511,7 @@ private struct NormalPanel: View {
             .background(Palette.blue.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
 
             HStack {
-                Label("Set Up Lid-Closed Mode", systemImage: "laptopcomputer.and.arrow.down")
+                Label(copy.setUpMode, systemImage: "laptopcomputer.and.arrow.down")
                     .font(.system(size: 12.5, weight: .semibold))
                 Spacer()
                 Image(systemName: "chevron.down")
@@ -339,7 +522,7 @@ private struct NormalPanel: View {
             .background(Palette.blue, in: RoundedRectangle(cornerRadius: 8))
 
             Divider()
-            Footer()
+            Footer(copy: copy)
         }
         .padding(16)
         .frame(width: 360, height: 379.5, alignment: .topLeading)
@@ -369,16 +552,40 @@ struct ReadmeScreenshotRenderer {
         let assets = URL(fileURLWithPath: root).appendingPathComponent("docs/assets").path
         try FileManager.default.createDirectory(atPath: assets, withIntermediateDirectories: true)
         try render(
-            ActivePanel(expanded: true, dark: true, threshold: 35),
+            MenuBarScene(active: true) {
+                ActivePanel(expanded: true, dark: true, threshold: 35, copy: .english)
+            },
             to: "\(assets)/lidguard-expanded-en.png"
         )
         try render(
-            ActivePanel(expanded: false, dark: false, threshold: 20),
+            MenuBarScene(active: true) {
+                ActivePanel(expanded: false, dark: false, threshold: 20, copy: .english)
+            },
             to: "\(assets)/lidguard-active-en.png"
         )
         try render(
-            NormalPanel(),
+            MenuBarScene(active: false) {
+                NormalPanel(copy: .english)
+            },
             to: "\(assets)/lidguard-normal-en.png"
+        )
+        try render(
+            MenuBarScene(active: true) {
+                ActivePanel(expanded: true, dark: true, threshold: 35, copy: .chinese)
+            },
+            to: "\(assets)/lidguard-expanded.png"
+        )
+        try render(
+            MenuBarScene(active: true) {
+                ActivePanel(expanded: false, dark: false, threshold: 20, copy: .chinese)
+            },
+            to: "\(assets)/lidguard-active.png"
+        )
+        try render(
+            MenuBarScene(active: false) {
+                NormalPanel(copy: .chinese)
+            },
+            to: "\(assets)/lidguard-normal.png"
         )
     }
 }
