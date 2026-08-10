@@ -1,0 +1,238 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">LidGuard 使用前后：端着开盖电脑出门，或安全合盖继续运行</title>
+  <desc id="desc">原创场景插画。左侧开发者因为 Agent 仍在运行，只能端着开盖电脑出门；右侧电脑已合盖收入背包，任务在 LidGuard 保护下继续运行，并可从手机查看。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07101a"/>
+      <stop offset="0.55" stop-color="#101722"/>
+      <stop offset="1" stop-color="#071812"/>
+    </linearGradient>
+    <radialGradient id="leftGlow" cx="48%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#7b2d30"/>
+      <stop offset="0.62" stop-color="#351d25"/>
+      <stop offset="1" stop-color="#17141b"/>
+    </radialGradient>
+    <radialGradient id="rightGlow" cx="45%" cy="35%" r="80%">
+      <stop offset="0" stop-color="#165d43"/>
+      <stop offset="0.6" stop-color="#102f27"/>
+      <stop offset="1" stop-color="#0c1717"/>
+    </radialGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#17212b"/>
+      <stop offset="1" stop-color="#080c11"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8ebf1"/>
+      <stop offset="1" stop-color="#9aa4b3"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d69a70"/>
+      <stop offset="1" stop-color="#a86649"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2e3743"/>
+      <stop offset="1" stop-color="#11171e"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000" flood-opacity="0.42"/>
+    </filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <pattern id="grain" width="140" height="140" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="18" r="1" fill="#fff" opacity="0.04"/>
+      <circle cx="96" cy="42" r="1" fill="#fff" opacity="0.025"/>
+      <circle cx="54" cy="108" r="1" fill="#fff" opacity="0.035"/>
+      <circle cx="126" cy="126" r="1" fill="#fff" opacity="0.03"/>
+    </pattern>
+    <clipPath id="leftPanelClip"><rect x="42" y="126" width="736" height="664" rx="42"/></clipPath>
+    <clipPath id="rightPanelClip"><rect x="822" y="126" width="736" height="664" rx="42"/></clipPath>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#grain)"/>
+
+  <g transform="translate(48 35)">
+    <path d="M0 27h72c9 0 16 7 16 16v14H72V45H16v12H0V27Z" fill="#24e77d"/>
+    <path d="M34 0h20v29h17L44 56 17 29h17V0Z" fill="#24e77d"/>
+    <rect x="-3" y="58" width="94" height="8" rx="4" fill="#24e77d"/>
+    <text x="112" y="55" fill="#f7f9fc" font-family="Avenir Next, Helvetica Neue, sans-serif" font-size="48" font-weight="750" letter-spacing="-1">LidGuard</text>
+  </g>
+  <text x="1552" y="67" text-anchor="end" fill="#8f9aaa" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="20" font-weight="600">合上屏幕，让工作继续。</text>
+
+  <rect x="42" y="126" width="736" height="664" rx="42" fill="url(#leftGlow)" stroke="#8a4349" stroke-opacity="0.48"/>
+  <rect x="822" y="126" width="736" height="664" rx="42" fill="url(#rightGlow)" stroke="#2bbf79" stroke-opacity="0.38"/>
+
+  <g clip-path="url(#leftPanelClip)">
+    <circle cx="161" cy="632" r="240" fill="#ff6868" opacity="0.06"/>
+    <path d="M42 681c126-31 273-36 410-5 123 28 225 26 326 0v114H42V681Z" fill="#0d1118" opacity="0.62"/>
+    <path d="M42 706c173-22 309-5 436 30 113 31 205 24 300 3v51H42v-84Z" fill="#080b10" opacity="0.7"/>
+
+    <g transform="translate(82 163)">
+      <rect width="178" height="40" rx="20" fill="#ff6767" opacity="0.15" stroke="#ff7c7c" stroke-opacity="0.6"/>
+      <circle cx="22" cy="20" r="6" fill="#ff7070"/>
+      <text x="38" y="27" fill="#ffd9d9" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="750">未使用 LIDGUARD</text>
+    </g>
+    <text x="82" y="256" fill="#fff" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="40" font-weight="760">任务还在运行。</text>
+    <text x="82" y="307" fill="#fff" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="40" font-weight="760">电脑却不能合盖。</text>
+    <text x="82" y="357" fill="#d0b8bd" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="19" font-weight="520">现在要出门？为了不让 Agent 停止，</text>
+    <text x="82" y="385" fill="#d0b8bd" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="19" font-weight="520">只能端着开盖电脑走出门。</text>
+
+    <!-- Backpack behind the developer -->
+    <g filter="url(#softShadow)" transform="translate(140 438) rotate(-7)">
+      <path d="M0 63C0 24 26 0 63 0h77c37 0 65 26 65 64v167c0 24-19 43-43 43H42c-23 0-42-19-42-42V63Z" fill="url(#bag)" stroke="#53606d" stroke-width="3"/>
+      <path d="M26 31c19-31 54-47 83-47 30 0 61 14 82 43" fill="none" stroke="#636f7b" stroke-width="15" stroke-linecap="round"/>
+      <path d="M17 136h171" stroke="#4c5864" stroke-width="3"/>
+      <path d="M32 164h140v62c0 14-11 25-25 25H57c-14 0-25-11-25-25v-62Z" fill="#202831"/>
+      <path d="M59 118h87" stroke="#697684" stroke-width="6" stroke-linecap="round"/>
+    </g>
+
+    <!-- Developer carrying the open laptop -->
+    <g transform="translate(246 393)">
+      <ellipse cx="194" cy="353" rx="151" ry="29" fill="#000" opacity="0.24"/>
+      <path d="M83 124c-16 44-19 113-10 172l7 75h82l8-126 16 126h84l-4-112c-3-77-11-130-37-161-20-24-119-17-146 26Z" fill="#26303a"/>
+      <path d="M109 369l-8 84 43 5 25-86M222 369l18 83 45-7-18-78" fill="none" stroke="#141b22" stroke-width="30" stroke-linecap="round"/>
+      <path d="M129 77c-41 8-71 48-67 104l10 126 102-4 12-132 42 111 73-28-50-132c-12-31-39-48-73-48l-49 3Z" fill="url(#shirt)"/>
+      <path d="M73 142c-8 47-13 92-9 140" fill="none" stroke="#727e8d" stroke-width="4" opacity="0.5"/>
+      <path d="M193 115c11 31 18 66 23 105" fill="none" stroke="#727e8d" stroke-width="4" opacity="0.5"/>
+      <circle cx="151" cy="40" r="52" fill="url(#skin)"/>
+      <path d="M101 37c2-39 25-66 62-64 33 2 54 25 47 58-15-16-33-27-60-30-20-2-35 9-49 36Z" fill="#161d25"/>
+      <path d="M108 43c10-8 23-9 37-5M160 38c12-5 26-2 35 6" stroke="#242b31" stroke-width="5" stroke-linecap="round"/>
+      <rect x="111" y="38" width="42" height="24" rx="9" fill="none" stroke="#222b36" stroke-width="5"/>
+      <rect x="159" y="38" width="42" height="24" rx="9" fill="none" stroke="#222b36" stroke-width="5"/>
+      <path d="M153 48h7" stroke="#222b36" stroke-width="4"/>
+      <path d="M144 72c11 6 22 7 33 0" fill="none" stroke="#774638" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Arm under the laptop -->
+      <path d="M229 156c18 42 44 72 82 92l79 15" fill="none" stroke="url(#skin)" stroke-width="31" stroke-linecap="round"/>
+      <path d="M86 180c-8 43-5 89 20 123l60 17" fill="none" stroke="url(#skin)" stroke-width="30" stroke-linecap="round"/>
+      <circle cx="390" cy="264" r="18" fill="#b97755"/>
+
+      <!-- Awkward open laptop -->
+      <g transform="translate(144 146) rotate(7)" filter="url(#shadow)">
+        <path d="M0 10c0-10 8-18 18-18h250c10 0 18 8 18 18v155H0V10Z" fill="#232c36" stroke="#7f8996" stroke-width="4"/>
+        <rect x="13" y="7" width="260" height="145" rx="8" fill="url(#screen)"/>
+        <circle cx="27" cy="22" r="4" fill="#ff665f"/><circle cx="40" cy="22" r="4" fill="#f6c857"/><circle cx="53" cy="22" r="4" fill="#38d47a"/>
+        <text x="69" y="27" fill="#7d8b98" font-family="SFMono-Regular, Menlo, monospace" font-size="9">agent-session</text>
+        <rect x="25" y="45" width="122" height="6" rx="3" fill="#24e77d" opacity="0.9"/>
+        <rect x="25" y="60" width="216" height="5" rx="2.5" fill="#83909e" opacity="0.55"/>
+        <rect x="25" y="73" width="186" height="5" rx="2.5" fill="#83909e" opacity="0.38"/>
+        <rect x="25" y="86" width="232" height="5" rx="2.5" fill="#83909e" opacity="0.46"/>
+        <rect x="25" y="105" width="151" height="8" rx="4" fill="#ffbd5b" opacity="0.9"/>
+        <text x="25" y="132" fill="#b9c4cf" font-family="PingFang SC, SFMono-Regular, monospace" font-size="11">Codex 任务运行中 · 63%</text>
+        <path d="M-25 165h336l33 27c8 7 3 20-8 20H-16c-12 0-17-15-8-22l27-25Z" fill="#a7afb9" stroke="#d6dbe0" stroke-width="3"/>
+        <rect x="105" y="174" width="84" height="8" rx="4" fill="#7b858f" opacity="0.75"/>
+      </g>
+    </g>
+
+    <g transform="translate(70 716)">
+      <rect width="190" height="42" rx="21" fill="#ff6b6b" opacity="0.14" stroke="#ff8585" stroke-opacity="0.48"/>
+      <text x="95" y="28" text-anchor="middle" fill="#ffc1c1" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="14" font-weight="700">电脑必须开着盖</text>
+      <rect x="203" width="166" height="42" rx="21" fill="#fff" opacity="0.07" stroke="#fff" stroke-opacity="0.16"/>
+      <text x="286" y="28" text-anchor="middle" fill="#ded6d8" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="14" font-weight="650">一只手被占用</text>
+    </g>
+  </g>
+
+  <g clip-path="url(#rightPanelClip)">
+    <circle cx="1426" cy="639" r="251" fill="#24e77d" opacity="0.055"/>
+    <path d="M822 681c126-31 273-36 410-5 123 28 225 26 326 0v114H822V681Z" fill="#08120f" opacity="0.52"/>
+    <path d="M822 706c173-22 309-5 436 30 113 31 205 24 300 3v51H822v-84Z" fill="#050b09" opacity="0.62"/>
+
+    <g transform="translate(862 163)">
+      <rect width="151" height="40" rx="20" fill="#24e77d" opacity="0.12" stroke="#24e77d" stroke-opacity="0.5"/>
+      <circle cx="22" cy="20" r="6" fill="#24e77d"/>
+      <text x="38" y="27" fill="#b8ffd7" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="750">使用 LIDGUARD</text>
+    </g>
+    <text x="862" y="256" fill="#fff" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="40" font-weight="760">放心合盖。</text>
+    <text x="862" y="307" fill="#fff" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="40" font-weight="760">让任务继续运行。</text>
+    <text x="862" y="357" fill="#aac9bb" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="19" font-weight="520">把 Mac 收进包里，Codex 任务、构建、下载或</text>
+    <text x="862" y="385" fill="#aac9bb" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="19" font-weight="520">手机远控仍可在保护策略下继续。</text>
+
+    <!-- Walking developer -->
+    <g transform="translate(908 411)">
+      <ellipse cx="182" cy="337" rx="142" ry="26" fill="#000" opacity="0.24"/>
+      <path d="M51 74c-31 21-42 61-35 111l18 137 106 1 11-134 27 137h104l-17-148c-7-61-35-103-83-117-45-13-94-9-131 13Z" fill="#c8d0d9"/>
+      <path d="M62 322 34 425l44 12 68-111M217 323l43 110 45-12-34-107" fill="none" stroke="#18212a" stroke-width="31" stroke-linecap="round"/>
+      <path d="M39 114c-19 51-20 115-10 172" fill="none" stroke="#84909d" stroke-width="5" opacity="0.55"/>
+      <circle cx="125" cy="29" r="52" fill="url(#skin)"/>
+      <path d="M75 25c4-39 27-63 62-61 31 2 52 24 45 56-13-14-34-26-58-28-20-2-35 10-49 33Z" fill="#171f27"/>
+      <rect x="84" y="29" width="40" height="23" rx="9" fill="none" stroke="#202a33" stroke-width="5"/>
+      <rect x="130" y="29" width="40" height="23" rx="9" fill="none" stroke="#202a33" stroke-width="5"/>
+      <path d="M124 39h6" stroke="#202a33" stroke-width="4"/>
+      <path d="M118 64c12 10 26 9 38-2" fill="none" stroke="#774638" stroke-width="4" stroke-linecap="round"/>
+
+      <!-- Backpack with closed laptop -->
+      <g transform="translate(212 66) rotate(5)" filter="url(#softShadow)">
+        <path d="M0 51C0 20 23 0 54 0h63c34 0 58 23 58 58v189c0 21-17 38-38 38H38c-21 0-38-17-38-38V51Z" fill="url(#bag)" stroke="#566270" stroke-width="3"/>
+        <path d="M24 26C41 1 61-10 88-10c27 0 49 11 66 34" fill="none" stroke="#697683" stroke-width="13" stroke-linecap="round"/>
+        <path d="M23 153h129" stroke="#53606d" stroke-width="3"/>
+        <path d="M28 181h119v49c0 15-12 27-27 27H55c-15 0-27-12-27-27v-49Z" fill="#202a33"/>
+        <rect x="38" y="31" width="100" height="126" rx="12" fill="#9aa4ae" stroke="#d7dce1" stroke-width="3"/>
+        <path d="M48 42h80v104H48z" fill="#747f8a"/>
+        <path d="M58 54h60" stroke="#b8c0c8" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+        <circle cx="88" cy="101" r="14" fill="#24e77d" opacity="0.85"/>
+        <path d="M84 93h8v17h-8zM78 104h20" stroke="#0f2a20" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <!-- Phone and relaxed arm -->
+      <path d="M48 161c11 41 31 69 65 84l44 9" fill="none" stroke="url(#skin)" stroke-width="29" stroke-linecap="round"/>
+      <g transform="translate(142 205) rotate(7)" filter="url(#softShadow)">
+        <rect width="76" height="135" rx="17" fill="#111922" stroke="#aab3bd" stroke-width="4"/>
+        <rect x="7" y="12" width="62" height="111" rx="11" fill="#0b2018"/>
+        <rect x="27" y="5" width="22" height="4" rx="2" fill="#626d78"/>
+        <circle cx="38" cy="43" r="18" fill="#24e77d" opacity="0.16"/>
+        <path d="M31 42h14M38 35v14" stroke="#24e77d" stroke-width="4" stroke-linecap="round"/>
+        <rect x="17" y="70" width="42" height="5" rx="2.5" fill="#24e77d"/>
+        <rect x="17" y="83" width="35" height="4" rx="2" fill="#82a792"/>
+        <text x="38" y="105" text-anchor="middle" fill="#c8f7dc" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="8" font-weight="700">任务运行中</text>
+      </g>
+    </g>
+
+    <!-- LidGuard status card -->
+    <g transform="translate(1224 405)" filter="url(#shadow)">
+      <rect width="292" height="231" rx="27" fill="#171f22" stroke="#42534d" stroke-width="2"/>
+      <path d="M24 36h43c6 0 11 5 11 11v8H68v-7H33v7H24V36Z" fill="#24e77d"/>
+      <path d="M44 18h13v19h11L51 54 34 37h10V18Z" fill="#24e77d"/>
+      <text x="92" y="43" fill="#f4f8f6" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="16" font-weight="750">正在合盖运行</text>
+      <text x="25" y="87" fill="#7e9389" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="12" font-weight="700">会话状态</text>
+      <rect x="24" y="102" width="244" height="48" rx="14" fill="#123827" stroke="#24e77d" stroke-opacity="0.6"/>
+      <circle cx="48" cy="126" r="11" fill="#24e77d"/>
+      <path d="m43 126 4 4 7-9" fill="none" stroke="#0b2419" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="68" y="123" fill="#e9fff2" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="16" font-weight="700">平衡模式</text>
+      <text x="68" y="140" fill="#9bc4ad" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="11">不限时 · 接通电源</text>
+      <g transform="translate(24 169)">
+        <rect width="66" height="36" rx="12" fill="#242d30"/>
+        <text x="33" y="23" text-anchor="middle" fill="#c7d0cc" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="11" font-weight="650">电量</text>
+        <rect x="77" width="66" height="36" rx="12" fill="#242d30"/>
+        <text x="110" y="23" text-anchor="middle" fill="#c7d0cc" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="11" font-weight="650">热状态</text>
+        <rect x="154" width="66" height="36" rx="12" fill="#242d30"/>
+        <text x="187" y="23" text-anchor="middle" fill="#c7d0cc" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="11" font-weight="650">定时</text>
+      </g>
+    </g>
+
+    <g transform="translate(850 716)">
+      <rect width="196" height="42" rx="21" fill="#24e77d" opacity="0.12" stroke="#24e77d" stroke-opacity="0.45"/>
+      <text x="98" y="28" text-anchor="middle" fill="#b9ffda" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="14" font-weight="700">电脑收入包内</text>
+      <rect x="209" width="196" height="42" rx="21" fill="#fff" opacity="0.07" stroke="#fff" stroke-opacity="0.15"/>
+      <text x="307" y="28" text-anchor="middle" fill="#d4e3db" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="14" font-weight="650">任务仍在运行</text>
+    </g>
+  </g>
+
+  <g transform="translate(777 444)" filter="url(#softShadow)">
+    <circle cx="23" cy="23" r="29" fill="#f4f7f9"/>
+    <path d="M11 23h22M25 14l9 9-9 9" fill="none" stroke="#17202a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g transform="translate(43 816)">
+    <rect width="1514" height="52" rx="26" fill="#111923" stroke="#2b3540"/>
+    <text x="32" y="34" fill="#8d99a7" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="650">内置保护</text>
+    <circle cx="260" cy="26" r="6" fill="#24e77d"/>
+    <text x="277" y="33" fill="#e1e7ec" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="650">定时恢复</text>
+    <circle cx="488" cy="26" r="6" fill="#24e77d"/>
+    <text x="505" y="33" fill="#e1e7ec" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="650">可调低电量阈值</text>
+    <circle cx="825" cy="26" r="6" fill="#24e77d"/>
+    <text x="842" y="33" fill="#e1e7ec" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="650">热状态自动恢复</text>
+    <circle cx="1129" cy="26" r="6" fill="#24e77d"/>
+    <text x="1146" y="33" fill="#e1e7ec" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="17" font-weight="650">由用户明确控制</text>
+  </g>
+</svg>

@@ -16,6 +16,12 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/assets/lidguard-pain-point-zh.png" alt="未使用 LidGuard 时，为了让 Agent 继续运行只能端着开盖 Mac 出门；使用 LidGuard 后，电脑可以合盖收入背包，任务在保护策略下继续" width="960">
+</p>
+
+<p align="center"><sub>很多人都遇到过这种尴尬：为了不让任务停止，只能让电脑一直开着盖。LidGuard 让你放心合盖，并通过定时、低电量和热状态保护避免忘记恢复休眠。</sub></p>
+
 macOS 默认会在合盖后进入睡眠，正在运行的 Codex 任务、构建、下载等后台工作，以及手机远控会随之中断。LidGuard 提供两个明确模式，并可在定时结束、低电量或 macOS 报告严重热压力时自动恢复正常休眠。
 
 - **合盖运行**：合盖后继续运行 Codex 任务和其他后台工作，并让受支持的远程控制软件保持可用。
