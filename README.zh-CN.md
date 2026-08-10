@@ -4,25 +4,23 @@
 
 # LidGuard · 合盖守护
 
-**让 Mac 合盖后继续运行，使 Codex 等本地编程 Agent 能继续工作，外出时也能保持远程访问。LidGuard 同时提供定时、低电量和热状态保护。**
+**合盖后让 Mac 继续运行，使 Codex 任务、手机远控等不中断。**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
 [![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
 
-菜单栏 App · 权限边界明确的特权 helper · CLI · 不创建虚拟显示器 · 不安装 Agent hooks
+菜单栏 App · 定时、低电量和热状态保护 · CLI · 不创建虚拟显示器 · 不安装 Agent hooks
 
 </div>
 
-有时你需要合上 MacBook，但 **Codex 等本地编程 Agent 仍在工作、构建或下载尚未完成，或者你之后还想通过手机远程连接**。macOS 默认会在合盖后进入睡眠，本地任务会暂停，远程连接也会中断。
+macOS 默认会在合盖后进入睡眠，正在运行的 Codex 任务、构建、下载和手机远控会随之中断。LidGuard 提供两个明确模式，并可在定时结束、低电量或 macOS 报告严重热压力时自动恢复正常休眠。
 
-LidGuard 让你决定合盖后是继续运行，还是恢复正常休眠。启用合盖运行后，如果定时结束、电量降至设定阈值，或 macOS 报告严重热压力，LidGuard 可以自动恢复正常休眠。
-
-- **合盖运行**：合盖后继续运行本地编程 Agent 和后台任务，并让受支持的远程控制软件保持可用。
+- **合盖运行**：合盖后继续运行 Codex 任务和其他后台工作，并让受支持的远程控制软件保持可用。
 - **正常休眠**：恢复 macOS 默认行为，合盖后正常进入睡眠。
 
-LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获屏幕、阻止显示器休眠，也不会修改其他睡眠设置。
+LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获屏幕、阻止显示器休眠或修改其他睡眠设置。
 
 > [!WARNING]
 > 在保护套、背包或其他密闭空间内运行 MacBook 可能积热。LidGuard 可以响应 macOS 报告的热压力，但无法保证温度或通风一定安全。完全手动且不限时运行需要二次确认。

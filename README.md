@@ -4,25 +4,23 @@
 
 # LidGuard
 
-**Keep your Mac running with the lid closed so coding agents such as Codex can keep working and remote access stays available while you are away. LidGuard adds time, battery, and thermal safeguards.**
+**Keep your Mac running with the lid closed, so Codex tasks and remote access from your phone can continue.**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
 [![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
 
-Menu bar app · Tightly scoped privileged helper · CLI · No virtual display · No agent hooks
+Menu bar app · Time, battery, and thermal safeguards · CLI · No virtual display · No agent hooks
 
 </div>
 
-Sometimes you need to close your MacBook while **a coding agent such as Codex is still working, a build or download is in progress, or you plan to reconnect from your phone**. By default, macOS sleeps when the lid closes, pausing local work and dropping remote access.
+By default, macOS sleeps when the lid closes, interrupting Codex tasks, builds, downloads, and remote access. LidGuard gives you two clear modes and can automatically restore normal sleep when a timer expires, the battery runs low, or macOS reports serious thermal pressure.
 
-LidGuard lets you decide whether closing the lid should keep the Mac running or return it to normal sleep. While lid-closed operation is active, LidGuard can automatically restore normal sleep when a timer expires, the battery reaches your threshold, or macOS reports serious thermal pressure.
-
-- **Keep Running with Lid Closed**: keeps coding agents and background jobs running, and supported remote-control software available, after the lid closes.
+- **Keep Running with Lid Closed**: keeps Codex tasks and other background work running, while supported remote-control software remains available.
 - **Normal Lid Sleep**: restores the default macOS behavior, so the Mac sleeps when the lid closes.
 
-LidGuard changes only the lid-close sleep behavior. It does not create a virtual display, capture the screen, keep the display awake, or change unrelated sleep settings.
+LidGuard changes only lid-close sleep behavior. It does not create a virtual display, capture the screen, keep the display awake, or change unrelated sleep settings.
 
 > [!WARNING]
 > Running a MacBook inside a sleeve, backpack, or other enclosed space can trap heat. LidGuard can react to thermal pressure reported by macOS, but it cannot guarantee safe temperatures or airflow. Manual sessions with no time limit require an additional confirmation.
