@@ -1,6 +1,6 @@
 <div align="center">
 
-**简体中文** · [English](README.en.md)
+**简体中文** · [English](README.md)
 
 # LidGuard · 合盖守护
 
