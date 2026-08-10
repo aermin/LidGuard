@@ -90,7 +90,7 @@ private struct ModeSwitcher: View {
             HStack(spacing: 8) {
                 ModeCard(
                     title: "Keep Running",
-                    subtitle: "Remote access on",
+                    subtitle: "Work stays active",
                     icon: "laptopcomputer.and.arrow.down",
                     selected: active,
                     tint: Palette.green,
@@ -98,7 +98,7 @@ private struct ModeSwitcher: View {
                 )
                 ModeCard(
                     title: "Normal Sleep",
-                    subtitle: "macOS default",
+                    subtitle: "Sleeps on close",
                     icon: "moon.zzz",
                     selected: !active,
                     tint: Palette.blue,
@@ -139,7 +139,7 @@ private struct Metrics: View {
         HStack(spacing: 10) {
             MetricCard(title: "THERMAL", value: "Normal", icon: "thermometer.medium", dark: dark)
             MetricCard(title: "BATTERY", value: "\(battery)%", icon: "battery.75percent", dark: dark)
-            MetricCard(title: "POWER", value: "Adapter", icon: "powerplug", dark: dark)
+            MetricCard(title: "POWER", value: "AC Power", icon: "powerplug", dark: dark)
         }
     }
 }
@@ -152,10 +152,10 @@ private struct ActiveSession: View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Balanced", systemImage: "shield.checkered")
                 .font(.subheadline.weight(.semibold))
-            Text("Unlimited session")
+            Text("No time limit")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Text("Low-battery protection: \(threshold)%")
+            Text("Low-battery threshold: \(threshold)%")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -185,7 +185,7 @@ private struct ActivePanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 13) {
-            Header(active: true, subtitle: "Balanced lid-closed session is active")
+            Header(active: true, subtitle: "Balanced safeguards are active")
             ModeSwitcher(active: true, dark: dark)
             Divider()
             Metrics(battery: 86, dark: dark)
@@ -224,7 +224,7 @@ private struct ExpandedControls: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("CURRENT SESSION SAFEGUARDS")
                     .font(.system(size: 11.5, weight: .semibold))
-                Text("Changes apply immediately to the current session.")
+                Text("Changes take effect immediately.")
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
             }
@@ -238,10 +238,10 @@ private struct ExpandedControls: View {
             .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
 
             HStack {
-                Text("Session duration")
+                Text("Duration")
                     .font(.system(size: 12, weight: .medium))
                 Spacer()
-                Text("Unlimited")
+                Text("No time limit")
                     .font(.system(size: 12, weight: .semibold))
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption)
@@ -251,7 +251,7 @@ private struct ExpandedControls: View {
             .frame(height: 30)
             .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
 
-            Text("Keeps running until you manually restore normal lid sleep.")
+            Text("Keeps running until you restore normal lid sleep.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
 
@@ -271,12 +271,12 @@ private struct ExpandedControls: View {
                 .background(dark ? Palette.darkCard : Palette.lightCard, in: RoundedRectangle(cornerRadius: 7))
             }
 
-            Text("Threshold is adjustable. Serious heat restores sleep automatically; unlimited sessions are optional.")
+            Text("Adjustable threshold. Serious thermal pressure automatically restores normal sleep.")
                 .font(.system(size: 10.5))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Apply Safeguards")
+            Text("Apply Changes")
                 .font(.system(size: 13.5, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
@@ -310,15 +310,15 @@ private struct Segment: View {
 private struct NormalPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Header(active: false, subtitle: "Default macOS lid sleep is restored")
+            Header(active: false, subtitle: "macOS will sleep when the lid closes")
             ModeSwitcher(active: false, dark: false)
             Divider()
             Metrics(battery: 86, dark: false)
 
             VStack(alignment: .leading, spacing: 5) {
-                Label("Sleep is managed normally by macOS", systemImage: "checkmark.shield")
+                Label("Normal macOS sleep behavior", systemImage: "checkmark.shield")
                     .font(.system(size: 12.5, weight: .semibold))
-                Text("No lid-closed session or timer, battery, or thermal safeguard is active.")
+                Text("No LidGuard session or safeguards are active.")
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -328,7 +328,7 @@ private struct NormalPanel: View {
             .background(Palette.blue.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
 
             HStack {
-                Label("Configure Lid-Closed Session", systemImage: "laptopcomputer.and.arrow.down")
+                Label("Set Up Lid-Closed Mode", systemImage: "laptopcomputer.and.arrow.down")
                     .font(.system(size: 12.5, weight: .semibold))
                 Spacer()
                 Image(systemName: "chevron.down")

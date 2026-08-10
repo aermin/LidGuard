@@ -4,45 +4,45 @@
 
 # LidGuard
 
-**Close your Mac before heading out without interrupting Codex, other local agents, or remote access. LidGuard keeps them running under configurable safeguards.**
+**Keep your Mac running with the lid closed so coding agents such as Codex can keep working and remote access stays available while you are away. LidGuard adds time, battery, and thermal safeguards.**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
 [![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
 
-Lightweight menu bar app · Restricted root helper · CLI · No display takeover · No agent hooks
+Menu bar app · Tightly scoped privileged helper · CLI · No virtual display · No agent hooks
 
 </div>
 
-You may need to close your Mac and put it in a sleeve or bag while **Codex, another local agent, a download, or a build is still running**. You may also leave the Mac at home or at your desk and continue viewing and controlling it from your phone. By default, macOS sleeps when the lid is closed, stopping those tasks and remote connections.
+Sometimes you need to close your MacBook while **a coding agent such as Codex is still working, a build or download is in progress, or you plan to reconnect from your phone**. By default, macOS sleeps when the lid closes, pausing local work and dropping remote access.
 
-LidGuard lets you choose what happens after the lid closes. It can keep the Mac running when needed, then automatically restore normal sleep when a timer, low-battery threshold, or system thermal safeguard is triggered. It exposes two clear modes:
+LidGuard lets you decide whether closing the lid should keep the Mac running or return it to normal sleep. While lid-closed operation is active, LidGuard can automatically restore normal sleep when a timer expires, the battery reaches your threshold, or macOS reports serious thermal pressure.
 
-- **Keep Running with Lid Closed**: agents, tasks, and remote connections continue after the lid closes, under the safeguards you select.
-- **Normal Lid Sleep**: restores the default macOS behavior so the Mac sleeps normally when closed.
+- **Keep Running with Lid Closed**: keeps coding agents and background jobs running, and supported remote-control software available, after the lid closes.
+- **Normal Lid Sleep**: restores the default macOS behavior, so the Mac sleeps when the lid closes.
 
-LidGuard only manages whether the Mac keeps running with the lid closed. It does not take over the display or alter unrelated sleep settings.
+LidGuard changes only the lid-close sleep behavior. It does not create a virtual display, capture the screen, keep the display awake, or change unrelated sleep settings.
 
 > [!WARNING]
-> Running a Mac inside a sleeve, backpack, or other enclosed space can trap heat. LidGuard provides thermal safeguards, but it cannot eliminate physical cooling risks. Manual unlimited sessions require an additional confirmation.
+> Running a MacBook inside a sleeve, backpack, or other enclosed space can trap heat. LidGuard can react to thermal pressure reported by macOS, but it cannot guarantee safe temperatures or airflow. Manual sessions with no time limit require an additional confirmation.
 
 ## Quick Start
 
 ### Daily Use
 
 1. Click the LidGuard icon in the menu bar.
-2. Select **Keep Running with Lid Closed (`合盖运行`)**, choose a protection profile and duration, then click **Start (`开始合盖运行`)**.
-3. When continuous operation is no longer needed, select **Normal Lid Sleep (`正常休眠`)** to restore the default macOS lid behavior.
+2. Select **Keep Running (`合盖运行`)**, choose a protection profile and duration, then click **Start (`开始合盖运行`)**.
+3. When you no longer need the Mac to stay running, select **Normal Sleep (`正常休眠`)** to restore the default macOS behavior.
 
-While a session is active, you can view its remaining time, battery level, power source, and system thermal state, or adjust its safeguards.
+While a session is active, you can check the remaining time, battery level, power source, and thermal state, or adjust the current safeguards.
 
 ### Requirements
 
 - Apple Silicon Mac
 - macOS 13 or later
 - Xcode Command Line Tools / Swift 5.10
-- The current local v1 uses ad-hoc signing and is not a distributable installer
+- This source-only v1 uses ad-hoc signing and is not ready for distribution
 
 ### Build, Test, and Install
 
@@ -58,13 +58,13 @@ make install
 `make install` will:
 
 1. Build `dist/LidGuard.app`.
-2. Request administrator authorization once.
-3. Install the restricted helper, LaunchDaemon, and `/usr/local/bin/lidguard`.
+2. Prompt once for administrator authorization.
+3. Install the privileged helper, LaunchDaemon, and `/usr/local/bin/lidguard`.
 4. Open the LidGuard menu bar app.
 
-Switching modes during normal use should not request administrator authorization again.
+After the initial installation, switching modes does not require administrator authorization.
 
-Local v1 builds use ad-hoc signatures. Rebuilding the app generates a new code hash, so updating a development build with `make install` requires authorization again. LidGuard detects this signature mismatch and displays **Reauthorize Helper (`重新授权 Helper`)** instead of incorrectly reporting the helper as missing.
+Development builds use ad-hoc signatures, so each rebuild changes the app's code signature. Running `make install` to update a development build will therefore request administrator authorization again. If the installed helper no longer recognizes the rebuilt app, LidGuard displays **Reauthorize Helper (`重新授权 Helper`)** instead of reporting the helper as missing.
 
 ## Interface
 
@@ -72,9 +72,9 @@ Local v1 builds use ad-hoc signatures. Rebuilding the app generates a new code h
   <img src="docs/assets/lidguard-expanded-en.png" alt="Expanded LidGuard control panel" width="560">
 </p>
 
-<p align="center"><sub>The expanded panel keeps mode switching, device status, the current session, protection profile, duration, and low-battery threshold in one menu.</sub></p>
+<p align="center"><sub>The expanded panel puts mode selection, device status, session details, safeguards, duration, and the low-battery threshold in one menu.</sub></p>
 
-The low-battery threshold is configurable directly in the protection panel. Strict mode uses a fixed 30% threshold, Balanced mode supports 10%-50%, and Manual mode exposes the same threshold control after low-battery protection is enabled.
+The low-battery threshold can be changed directly in the safeguards panel. Strict uses a fixed 30% threshold, Balanced allows 10%–50%, and Manual exposes the same control when low-battery protection is enabled.
 
 <table>
   <tr>
@@ -87,7 +87,7 @@ The low-battery threshold is configurable directly in the protection panel. Stri
   </tr>
   <tr>
     <td>Shows the current profile, duration, low-battery threshold, thermal state, and power source.</td>
-    <td>Hides irrelevant protection countdowns and expands session configuration only when needed.</td>
+    <td>Shows a clean idle state and reveals session setup only when requested.</td>
   </tr>
 </table>
 
@@ -95,17 +95,17 @@ The low-battery threshold is configurable directly in the protection panel. Stri
 
 | Profile | Duration | Low-battery safeguard | Thermal safeguard | Best for |
 | --- | --- | --- | --- | --- |
-| **Strict** | Required, 30 minutes to 8 hours | Fixed at 30% | Restore sleep at `serious` or `critical` | Short absences, safety first |
-| **Balanced** | Preset, custom, or unlimited | 20% by default, adjustable from 10%-50% | Restore sleep at `serious` or `critical` | Everyday remote access and agent tasks |
-| **Manual** | Preset, custom, or unlimited | Off by default, optional | Warn at `serious`; always restore sleep at `critical` | Users explicitly accepting more risk |
+| **Strict** | Required: 30 minutes to 8 hours | Fixed at 30% | Restores normal sleep at `serious` or `critical` | Short absences; safety first |
+| **Balanced** | Preset, custom, or no time limit | 20% by default; adjustable from 10%–50% | Restores normal sleep at `serious` or `critical` | Everyday remote access and agent tasks |
+| **Manual** | Preset, custom, or no time limit | Off by default; optional | Warns at `serious`; always restores sleep at `critical` | Advanced users who want direct control |
 
-Custom sessions can run for up to 7 days. LidGuard sends a notification 5 minutes before expiration. Low-battery protection triggers only while running on battery and not charging.
+Timed sessions can run for up to 7 days. LidGuard sends a notification 5 minutes before a timed session ends. Low-battery protection applies only while the Mac is running on battery and not charging.
 
 ## CLI
 
 ### Install the CLI
 
-The CLI does not require a separate installation. Complete the source installation above:
+The CLI is installed together with the app and helper. Use the source installation above:
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -113,7 +113,7 @@ cd LidGuard
 make install
 ```
 
-`make install` installs the menu bar app, restricted helper, and CLI together. The CLI is placed at:
+`make install` installs the menu bar app, privileged helper, and CLI together. The CLI is placed at:
 
 ```text
 /usr/local/bin/lidguard
@@ -130,7 +130,7 @@ lidguard status
 If the shell reports `command not found`, try `/usr/local/bin/lidguard doctor` directly. If that works, make sure `/usr/local/bin` is included in your shell's `PATH`.
 
 > [!NOTE]
-> Do not copy only the CLI binary from the build directory. The CLI must be installed together with the helper so the installation process can register its code-signing requirement. Run `make install` again when updating a source build.
+> Do not copy the CLI binary by itself from the build directory. It must be installed with the helper so the installer can register the CLI's code-signing requirement. Run `make install` again when updating a source build.
 
 ### Usage
 
@@ -139,13 +139,13 @@ If the shell reports `command not found`, try `/usr/local/bin/lidguard doctor` d
 lidguard status
 lidguard status --json
 
-# Run a Balanced session for 4 hours
+# Start a Balanced session for 4 hours
 lidguard start --profile balanced --for 4h
 
-# Run a Strict session until a specific time
+# Start a Strict session that ends at a specific time
 lidguard start --profile strict --until 2026-08-10T23:30:00+08:00
 
-# Run a Manual unlimited session with explicit risk confirmation
+# Start a Manual session with no time limit and confirm the risk
 lidguard start --profile manual --unlimited --confirm-risk
 
 # Extend the current deadline by 2 hours
@@ -158,67 +158,67 @@ lidguard stop
 lidguard doctor
 ```
 
-LidGuard does not install Codex hooks. Agents must invoke the CLI explicitly, so starting or finishing a task never changes the entire Mac's power state automatically.
+LidGuard intentionally does not install Codex hooks. Agents can call the CLI explicitly, but starting or finishing a task will never change the Mac's system-wide sleep behavior automatically.
 
 ## Why LidGuard
 
-General-purpose keep-awake tools often affect the display, idle sleep, or other power behavior at the same time. Remote-control and agent workflows need a narrower switch with clear recovery behavior:
+General-purpose keep-awake tools often prevent display sleep, idle sleep, or both. Remote-control and agent workflows benefit from narrower control with predictable recovery behavior:
 
 | Goal | LidGuard behavior |
 | --- | --- |
 | Keep tasks running after the lid closes | Changes only the system `SleepDisabled` state |
-| Keep remote desktop visible and controllable | Creates no display sleep assertion or virtual display |
-| Preserve safeguards after the app quits | The LaunchDaemon helper persists timers and policies |
-| Avoid entering an admin password every time | Authorize the helper once, then use restricted XPC calls |
-| Recover from low battery or overheating | Restore `disablesleep=0` and record the stop reason |
-| Handle external power-state changes | Do not fight them repeatedly; end the session or report external management |
+| Avoid interfering with remote desktop output | Creates no display-sleep assertion or virtual display |
+| Keep safeguards active after the app quits | The LaunchDaemon helper persists the session and its policies |
+| Avoid entering an admin password every time | Authorize the helper once, then use the limited XPC interface |
+| Recover from low battery or thermal pressure | Restores `disablesleep=0` and records the reason |
+| Respect changes made by other tools | Does not repeatedly override them; ends the session or reports an externally managed state |
 
 ## Security Boundaries
 
-- The helper runs as root but exposes only four structured operation types.
-- The helper validates the caller UID and the code-signing requirement recorded during installation.
-- Sessions, deadlines, and safeguards survive app, CLI, or helper restarts.
+- The helper runs as root but exposes only a fixed set of structured operations.
+- The helper validates the caller's UID and the code-signing requirement recorded during installation.
+- Session state, deadlines, and safeguards survive app, CLI, and helper restarts.
 - **Restore Normal Sleep** changes only `disablesleep=0`; it does not overwrite other `pmset` settings.
-- If another process disables `SleepDisabled`, LidGuard ends the current session instead of repeatedly enabling it again.
-- If another process enables `SleepDisabled`, the UI reports that the state is not managed by LidGuard.
+- If another process clears `SleepDisabled`, LidGuard ends the current session instead of repeatedly setting it again.
+- If another process sets `SleepDisabled`, the UI reports that LidGuard does not manage the current state.
 - Uninstalling the helper restores normal sleep first.
 
 ## Verification
 
-Automated tests cover the policy matrix, time parsing, low-battery behavior, all four thermal states, state recovery, external overrides, and `pmset` readback failures. Tests use fake power controllers and sensors, so they do not modify the real system power state.
+Automated tests cover the policy matrix, time parsing, low-battery behavior, all four macOS thermal states, state recovery, external overrides, and `pmset` verification failures. The test suite uses simulated power controllers and sensors, so it does not change the real system power state.
 
 ```text
 Tests: 16 passed, 0 failed
 ```
 
-Verified on the current test machine:
+Verified on the development Mac:
 
-- During an active session, vivo remote control remains visible and usable after the lid closes, and agents continue running.
-- In Normal Lid Sleep mode, remote control becomes unusable after the lid closes and macOS returns to its default sleep behavior.
+- During an active session, vivo remote control remains visible and usable after the lid closes, while coding agents continue running.
+- In Normal Sleep mode, remote control becomes unusable after the lid closes and macOS follows its default sleep behavior.
 - The helper continues enforcing timers, low-battery safeguards, and thermal safeguards after the app quits.
-- LidGuard adds no `caffeinate` or display sleep assertions.
+- LidGuard starts no `caffeinate` process and creates no display-sleep assertions.
 
 ## Uninstall
 
-In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠并卸载 Helper`)**. LidGuard first restores `disablesleep=0`, then removes the LaunchDaemon, helper, and CLI. The app and source code remain in place.
+In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠并卸载 Helper`)**. LidGuard first restores `disablesleep=0`, then removes the LaunchDaemon, helper, and CLI. The app bundle and source tree remain in place.
 
 ## Known Limitations
 
 > [!IMPORTANT]
-> Apple does not publicly document `pmset disablesleep` as a stable interface. Re-test lid-close, wake, and remote-control behavior after macOS upgrades.
+> Apple does not document `pmset disablesleep` as a stable public interface. Re-test lid-close, wake, and remote-control behavior after every macOS upgrade.
 
-- End-to-end testing has currently been completed only on an Apple Silicon Mac running macOS 15.6.1.
-- Local v1 uses ad-hoc signing and has not been prepared for Developer ID distribution or notarization.
-- LidGuard uses the system levels from `ProcessInfo.thermalState`; it does not read private SMC temperature values.
-- LidGuard cannot guarantee that every remote-control application will keep producing video while the lid is closed.
-- The absence of a reported `critical` thermal state does not mean running inside a sleeve or backpack is safe.
+- End-to-end testing has been completed only on one Apple Silicon Mac running macOS 15.6.1.
+- This v1 build uses ad-hoc signing. It is not signed with a Developer ID, notarized, or packaged for distribution.
+- LidGuard reads the thermal pressure levels reported by `ProcessInfo.thermalState`; it does not read private SMC temperature values.
+- LidGuard cannot guarantee that every remote-control application will continue rendering video while the lid is closed.
+- The absence of a `critical` thermal state is not proof that running inside a sleeve or backpack is safe.
 
 ## Project Structure
 
 ```text
 LidGuardCore       Shared models, policies, time parsing, and XPC protocol
 LidGuardApp        SwiftUI menu bar app and settings
-LidGuardHelper     Privileged helper entry point
+LidGuardHelper     Privileged helper executable
 LidGuardHelperKit  Power control, sensors, state persistence, and policy engine
 LidGuardCLI        lidguard command-line interface
 LidGuardTests      Side-effect-free policy and helper tests
@@ -228,15 +228,15 @@ LidGuardTests      Side-effect-free policy and helper tests
 
 ```mermaid
 flowchart LR
-    App["Menu Bar App"] -->|"start / stop / update / status"| XPC["Restricted XPC API"]
+    App["Menu Bar App"] -->|"start / stop / update / status"| XPC["Limited XPC Interface"]
     CLI["lidguard CLI"] -->|"Structured requests"| XPC
-    XPC --> Helper["Root Helper · LaunchDaemon"]
+    XPC --> Helper["Privileged Helper · LaunchDaemon"]
     Helper --> Policy["Timer / Battery / Thermal Policies"]
     Helper --> PM["pmset -a disablesleep 1 / 0"]
     PM --> Verify["Read pmset -g and verify SleepDisabled"]
-    Verify --> State["Persist State and Last Stop Reason"]
+    Verify --> State["Persist Session State and Stop Reason"]
 ```
 
-The helper accepts only the fixed `start`, `stop`, `update`, and `status` operations. It does not accept arbitrary command strings or file paths. After every change, it reads `pmset -g` to verify the result and never falsely reports an active session after a failed update.
+The helper accepts only the fixed `start`, `stop`, `update`, and `status` operations. It does not accept arbitrary command strings or file paths. After every state change, it reads `pmset -g` to verify the result and does not report success if verification fails.
 
-Internally, **Keep Running with Lid Closed** and **Normal Lid Sleep** execute `pmset -a disablesleep 1` and `pmset -a disablesleep 0`, respectively. LidGuard creates no virtual display, performs no screen capture, changes neither `sleep` nor `displaysleep`, and adds no extra sleep assertion through `caffeinate`.
+Internally, **Keep Running** and **Normal Sleep** execute `pmset -a disablesleep 1` and `pmset -a disablesleep 0`, respectively. LidGuard creates no virtual display, performs no screen capture, changes neither `sleep` nor `displaysleep`, and adds no extra sleep assertion through `caffeinate`.
