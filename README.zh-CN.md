@@ -31,12 +31,11 @@ LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获�
 
 1. 从 [GitHub Releases](https://github.com/aermin/LidGuard/releases) 下载 `LidGuard-1.0.0-preview.1-arm64.dmg`。
 2. 打开 DMG，将 **LidGuard** 拖入 **Applications（应用程序）**。
-3. 启动 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
+3. 在“应用程序”中尝试打开 LidGuard。由于预览版使用临时签名，macOS 可能会阻止启动。
+4. 打开 **“系统设置 → 隐私与安全性”**，向下找到“安全性”，点击 **“仍要打开”**，验证身份并再次确认 **“打开”**。
+5. 进入 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
 
 安装 Helper 时会同时安装 LaunchDaemon 和 `lidguard` CLI。完成首次授权后，日常切换“合盖运行 / 正常休眠”不再需要管理员密码。
-
-> [!NOTE]
-> 当前预览版使用临时签名。如果 macOS 首次启动时拦截，请在“应用程序”中右键 LidGuard，选择 **“打开”** 并确认一次。后续 Developer ID 签名并完成公证的正式版将不需要这一步。
 
 ### 日常使用
 
@@ -82,18 +81,6 @@ make dmg
 ```
 
 产物为 `dist/LidGuard-1.0.0-arm64.dmg`，本机测试 DMG 使用临时签名。
-
-维护者安装 **Developer ID Application** 证书，并将公证凭据保存为 `notarytool` 钥匙串配置后，可以生成正式签名并完成 Apple 公证的发布版本：
-
-```bash
-xcrun notarytool store-credentials LidGuard
-
-SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
-NOTARY_PROFILE="LidGuard" \
-make release
-```
-
-`make release` 会依次签名 CLI、helper、App 和 DMG，提交 Apple 公证，并将公证票据附加到 DMG。
 
 ## 界面
 

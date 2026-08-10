@@ -31,12 +31,11 @@ LidGuard changes only lid-close sleep behavior. It does not create a virtual dis
 
 1. Download `LidGuard-1.0.0-preview.1-arm64.dmg` from [GitHub Releases](https://github.com/aermin/LidGuard/releases).
 2. Open the DMG and drag **LidGuard** into **Applications**.
-3. Launch LidGuard, click **Install Helper (`安装 Helper`)**, and approve the one-time administrator prompt.
+3. Try to open LidGuard from Applications. macOS may block it because the preview uses an ad-hoc signature.
+4. Open **System Settings → Privacy & Security**, scroll to **Security**, click **Open Anyway**, authenticate, and confirm **Open**.
+5. In LidGuard, click **Install Helper (`安装 Helper`)** and approve the one-time administrator prompt.
 
 Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
-
-> [!NOTE]
-> The current preview is ad-hoc signed. If macOS blocks the first launch, Control-click LidGuard in Applications, choose **Open**, and confirm once. A Developer ID signed and notarized release will remove this extra step.
 
 ### Daily Use
 
@@ -82,18 +81,6 @@ make dmg
 ```
 
 The output is `dist/LidGuard-1.0.0-arm64.dmg`. Local test DMGs use ad-hoc signing.
-
-Maintainers can create a signed and notarized release after installing a **Developer ID Application** certificate and storing notarization credentials in a `notarytool` Keychain profile:
-
-```bash
-xcrun notarytool store-credentials LidGuard
-
-SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
-NOTARY_PROFILE="LidGuard" \
-make release
-```
-
-`make release` signs the CLI, helper, app, and DMG, submits the DMG to Apple for notarization, and staples the notarization ticket.
 
 ## Interface
 
