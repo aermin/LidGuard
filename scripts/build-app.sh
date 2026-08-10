@@ -4,6 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIGURATION="${CONFIGURATION:-debug}"
+SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
 DIST_DIRECTORY="$ROOT/dist"
 APP_BUNDLE="$DIST_DIRECTORY/LidGuard.app"
 
@@ -14,6 +15,7 @@ cd "$ROOT"
 
 BIN_DIRECTORY="$(/usr/bin/swift build -c "$CONFIGURATION" --show-bin-path)"
 
+/bin/rm -rf "$APP_BUNDLE"
 /bin/mkdir -p \
     "$APP_BUNDLE/Contents/MacOS" \
     "$APP_BUNDLE/Contents/Resources" \
@@ -35,9 +37,20 @@ BIN_DIRECTORY="$(/usr/bin/swift build -c "$CONFIGURATION" --show-bin-path)"
     "$APP_BUNDLE/Contents/Resources/install-helper.sh" \
     "$APP_BUNDLE/Contents/Resources/uninstall-helper.sh"
 
-/usr/bin/codesign --force --sign - --identifier local.huangxiaomin.LidGuard.cli "$APP_BUNDLE/Contents/MacOS/lidguard"
-/usr/bin/codesign --force --sign - --identifier local.huangxiaomin.LidGuard.helper "$APP_BUNDLE/Contents/Library/HelperTools/local.huangxiaomin.LidGuard.helper"
-/usr/bin/codesign --force --deep --sign - --identifier local.huangxiaomin.LidGuard "$APP_BUNDLE"
+SIGNING_ARGUMENTS=(--force --sign "$SIGNING_IDENTITY")
+if [[ "$SIGNING_IDENTITY" != "-" ]]; then
+    SIGNING_ARGUMENTS+=(--options runtime --timestamp)
+fi
+
+/usr/bin/codesign "${SIGNING_ARGUMENTS[@]}" \
+    --identifier local.huangxiaomin.LidGuard.cli \
+    "$APP_BUNDLE/Contents/MacOS/lidguard"
+/usr/bin/codesign "${SIGNING_ARGUMENTS[@]}" \
+    --identifier local.huangxiaomin.LidGuard.helper \
+    "$APP_BUNDLE/Contents/Library/HelperTools/local.huangxiaomin.LidGuard.helper"
+/usr/bin/codesign "${SIGNING_ARGUMENTS[@]}" \
+    --identifier local.huangxiaomin.LidGuard \
+    "$APP_BUNDLE"
 /usr/bin/codesign --verify --deep --strict "$APP_BUNDLE"
 
 echo "$APP_BUNDLE"

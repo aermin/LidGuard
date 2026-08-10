@@ -27,6 +27,14 @@ LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获�
 
 ## 快速开始
 
+### 使用 DMG 安装
+
+1. 从 GitHub Releases 下载最新的 `LidGuard-<版本>-arm64.dmg`。
+2. 打开 DMG，将 **LidGuard** 拖入 **Applications（应用程序）**。
+3. 启动 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
+
+安装 Helper 时会同时安装 LaunchDaemon 和 `lidguard` CLI。完成首次授权后，日常切换“合盖运行 / 正常休眠”不再需要管理员密码。
+
 ### 日常使用
 
 1. 点击菜单栏中的 LidGuard 图标。
@@ -39,10 +47,10 @@ LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获�
 
 - Apple Silicon Mac
 - macOS 13 或更高版本
-- Xcode Command Line Tools / Swift 5.10
-- 当前 v1 仅提供源码安装，使用临时签名，尚不具备分发条件
 
-### 构建、测试与安装
+### 从源码构建
+
+源码构建需要 Xcode Command Line Tools 和 Swift 5.10。
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -63,6 +71,26 @@ make install
 完成首次安装后，日常切换模式不再需要管理员授权。
 
 开发版本使用临时签名，每次重新构建都会改变 App 的代码签名。因此执行 `make install` 更新开发版本时，系统会再次请求管理员授权。如果已安装的 helper 不再识别重新构建的 App，LidGuard 会显示 **“重新授权 Helper”**，而不是误报 helper 丢失。
+
+生成本机测试 DMG：
+
+```bash
+make dmg
+```
+
+产物为 `dist/LidGuard-1.0.0-arm64.dmg`，本机测试 DMG 使用临时签名。
+
+维护者安装 **Developer ID Application** 证书，并将公证凭据保存为 `notarytool` 钥匙串配置后，可以生成正式签名并完成 Apple 公证的发布版本：
+
+```bash
+xcrun notarytool store-credentials LidGuard
+
+SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
+NOTARY_PROFILE="LidGuard" \
+make release
+```
+
+`make release` 会依次签名 CLI、helper、App 和 DMG，提交 Apple 公证，并将公证票据附加到 DMG。
 
 ## 界面
 
@@ -103,7 +131,7 @@ make install
 
 ### 安装 CLI
 
-CLI 会与 App 和 helper 一起安装，执行上面的源码安装流程即可：
+在 App 中点击 **“安装 Helper”** 时会自动安装 CLI。源码构建也可以通过以下命令安装相同组件：
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -205,7 +233,6 @@ Tests: 16 passed, 0 failed
 > [!IMPORTANT]
 > Apple 没有将 `pmset disablesleep` 作为稳定的公开接口提供文档。每次升级 macOS 后，都应重新验证合盖、唤醒和远程控制行为。
 
-- 端到端测试目前只在一台运行 macOS 15.6.1 的 Apple Silicon Mac 上完成。
 - LidGuard 读取 `ProcessInfo.thermalState` 报告的系统热压力等级，不读取私有 SMC 摄氏温度。
 - 未报告 `critical` 热状态并不能证明在保护套或背包内运行是安全的。
 

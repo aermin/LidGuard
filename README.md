@@ -27,6 +27,14 @@ LidGuard changes only lid-close sleep behavior. It does not create a virtual dis
 
 ## Quick Start
 
+### Install from a DMG
+
+1. Download the latest `LidGuard-<version>-arm64.dmg` from GitHub Releases.
+2. Open the DMG and drag **LidGuard** into **Applications**.
+3. Launch LidGuard, click **Install Helper (`安装 Helper`)**, and approve the one-time administrator prompt.
+
+Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
+
 ### Daily Use
 
 1. Click the LidGuard icon in the menu bar.
@@ -39,10 +47,10 @@ While a session is active, you can check the remaining time, battery level, powe
 
 - Apple Silicon Mac
 - macOS 13 or later
-- Xcode Command Line Tools / Swift 5.10
-- This source-only v1 uses ad-hoc signing and is not ready for distribution
 
-### Build, Test, and Install
+### Build from Source
+
+Source builds require Xcode Command Line Tools and Swift 5.10.
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -63,6 +71,26 @@ make install
 After the initial installation, switching modes does not require administrator authorization.
 
 Development builds use ad-hoc signatures, so each rebuild changes the app's code signature. Running `make install` to update a development build will therefore request administrator authorization again. If the installed helper no longer recognizes the rebuilt app, LidGuard displays **Reauthorize Helper (`重新授权 Helper`)** instead of reporting the helper as missing.
+
+To create a local test DMG:
+
+```bash
+make dmg
+```
+
+The output is `dist/LidGuard-1.0.0-arm64.dmg`. Local test DMGs use ad-hoc signing.
+
+Maintainers can create a signed and notarized release after installing a **Developer ID Application** certificate and storing notarization credentials in a `notarytool` Keychain profile:
+
+```bash
+xcrun notarytool store-credentials LidGuard
+
+SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
+NOTARY_PROFILE="LidGuard" \
+make release
+```
+
+`make release` signs the CLI, helper, app, and DMG, submits the DMG to Apple for notarization, and staples the notarization ticket.
 
 ## Interface
 
@@ -103,7 +131,7 @@ Timed sessions can run for up to 7 days. LidGuard sends a notification 5 minutes
 
 ### Install the CLI
 
-The CLI is installed together with the app and helper. Use the source installation above:
+The CLI is installed automatically when you click **Install Helper** in the app. Source builds can install the same components with:
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -205,7 +233,6 @@ In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠�
 > [!IMPORTANT]
 > Apple does not document `pmset disablesleep` as a stable public interface. Re-test lid-close, wake, and remote-control behavior after every macOS upgrade.
 
-- End-to-end testing has been completed only on one Apple Silicon Mac running macOS 15.6.1.
 - LidGuard reads the thermal pressure levels reported by `ProcessInfo.thermalState`; it does not read private SMC temperature values.
 - The absence of a `critical` thermal state is not proof that running inside a sleeve or backpack is safe.
 
