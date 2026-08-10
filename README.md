@@ -208,7 +208,6 @@ In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠�
 - End-to-end testing has been completed only on one Apple Silicon Mac running macOS 15.6.1.
 - This v1 build uses ad-hoc signing. It is not signed with a Developer ID, notarized, or packaged for distribution.
 - LidGuard reads the thermal pressure levels reported by `ProcessInfo.thermalState`; it does not read private SMC temperature values.
-- LidGuard cannot guarantee that every remote-control application will continue rendering video while the lid is closed.
 - The absence of a `critical` thermal state is not proof that running inside a sleeve or backpack is safe.
 
 ## Project Structure

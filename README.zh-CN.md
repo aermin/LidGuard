@@ -208,7 +208,6 @@ Tests: 16 passed, 0 failed
 - 端到端测试目前只在一台运行 macOS 15.6.1 的 Apple Silicon Mac 上完成。
 - 当前 v1 使用临时签名，未使用 Developer ID 签名，尚未公证或打包为可分发版本。
 - LidGuard 读取 `ProcessInfo.thermalState` 报告的系统热压力等级，不读取私有 SMC 摄氏温度。
-- LidGuard 无法保证所有远程控制软件都能在合盖状态下持续输出画面。
 - 未报告 `critical` 热状态并不能证明在保护套或背包内运行是安全的。
 
 ## 项目结构
