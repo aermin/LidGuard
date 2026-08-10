@@ -10,6 +10,7 @@
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
 [![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
 菜单栏 App · 定时、低电量和热状态保护 · CLI · 不创建虚拟显示器 · 不安装 Agent hooks
 
@@ -248,3 +249,7 @@ flowchart LR
     PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
     Verify --> State["持久化会话状态与停止原因"]
 ```
+
+## 开源许可
+
+LidGuard 使用 [MIT License](LICENSE) 开源。
