@@ -206,7 +206,6 @@ Tests: 16 passed, 0 failed
 > Apple 没有将 `pmset disablesleep` 作为稳定的公开接口提供文档。每次升级 macOS 后，都应重新验证合盖、唤醒和远程控制行为。
 
 - 端到端测试目前只在一台运行 macOS 15.6.1 的 Apple Silicon Mac 上完成。
-- 当前 v1 使用临时签名，未使用 Developer ID 签名，尚未公证或打包为可分发版本。
 - LidGuard 读取 `ProcessInfo.thermalState` 报告的系统热压力等级，不读取私有 SMC 摄氏温度。
 - 未报告 `critical` 热状态并不能证明在保护套或背包内运行是安全的。
 

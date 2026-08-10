@@ -206,7 +206,6 @@ In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠�
 > Apple does not document `pmset disablesleep` as a stable public interface. Re-test lid-close, wake, and remote-control behavior after every macOS upgrade.
 
 - End-to-end testing has been completed only on one Apple Silicon Mac running macOS 15.6.1.
-- This v1 build uses ad-hoc signing. It is not signed with a Developer ID, notarized, or packaged for distribution.
 - LidGuard reads the thermal pressure levels reported by `ProcessInfo.thermalState`; it does not read private SMC temperature values.
 - The absence of a `critical` thermal state is not proof that running inside a sleeve or backpack is safe.
 
