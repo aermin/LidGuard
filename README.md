@@ -69,7 +69,7 @@ Local v1 builds use ad-hoc signatures. Rebuilding the app generates a new code h
 ## Interface
 
 <p align="center">
-  <img src="docs/assets/lidguard-expanded.png" alt="Expanded LidGuard control panel" width="560">
+  <img src="docs/assets/lidguard-expanded-en.png" alt="Expanded LidGuard control panel" width="560">
 </p>
 
 <p align="center"><sub>The expanded panel keeps mode switching, device status, the current session, protection profile, duration, and low-battery threshold in one menu.</sub></p>
@@ -82,8 +82,8 @@ The low-battery threshold is configurable directly in the protection panel. Stri
     <td align="center"><strong>Normal Lid Sleep</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard active session" width="360"></td>
-    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard normal sleep mode" width="360"></td>
+    <td><img src="docs/assets/lidguard-active-en.png" alt="LidGuard active session" width="360"></td>
+    <td><img src="docs/assets/lidguard-normal-en.png" alt="LidGuard normal sleep mode" width="360"></td>
   </tr>
   <tr>
     <td>Shows the current profile, duration, low-battery threshold, thermal state, and power source.</td>
