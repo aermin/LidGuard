@@ -258,7 +258,3 @@ flowchart LR
     PM --> Verify["Read pmset -g and verify SleepDisabled"]
     Verify --> State["Persist Session State and Stop Reason"]
 ```
-
-The helper accepts only the fixed `start`, `stop`, `update`, and `status` operations. It does not accept arbitrary command strings or file paths. After every state change, it reads `pmset -g` to verify the result and does not report success if verification fails.
-
-Internally, **Keep Running** and **Normal Sleep** execute `pmset -a disablesleep 1` and `pmset -a disablesleep 0`, respectively. LidGuard creates no virtual display, performs no screen capture, changes neither `sleep` nor `displaysleep`, and adds no extra sleep assertion through `caffeinate`.

@@ -258,7 +258,3 @@ flowchart LR
     PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
     Verify --> State["持久化会话状态与停止原因"]
 ```
-
-Helper 只接受固定的 `start`、`stop`、`update` 和 `status` 操作，不接受任意命令字符串或文件路径。每次状态变更后都会读取 `pmset -g` 验证结果；验证失败时不会报告操作成功。
-
-技术上，“合盖运行”和“正常休眠”分别执行 `pmset -a disablesleep 1` 和 `pmset -a disablesleep 0`。LidGuard 不创建虚拟显示器、不捕获屏幕、不修改 `sleep` / `displaysleep`，也不通过 `caffeinate` 添加额外睡眠断言。
