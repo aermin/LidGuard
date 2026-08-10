@@ -27,13 +27,16 @@ LidGuard changes only lid-close sleep behavior. It does not create a virtual dis
 
 ## Quick Start
 
-### Install from a DMG
+### Install the Preview DMG
 
-1. Download the latest `LidGuard-<version>-arm64.dmg` from GitHub Releases.
+1. Download `LidGuard-1.0.0-preview.1-arm64.dmg` from [GitHub Releases](https://github.com/aermin/LidGuard/releases).
 2. Open the DMG and drag **LidGuard** into **Applications**.
 3. Launch LidGuard, click **Install Helper (`安装 Helper`)**, and approve the one-time administrator prompt.
 
 Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
+
+> [!NOTE]
+> The current preview is ad-hoc signed. If macOS blocks the first launch, Control-click LidGuard in Applications, choose **Open**, and confirm once. A Developer ID signed and notarized release will remove this extra step.
 
 ### Daily Use
 

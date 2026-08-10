@@ -27,13 +27,16 @@ LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获�
 
 ## 快速开始
 
-### 使用 DMG 安装
+### 安装 Preview 预览版
 
-1. 从 GitHub Releases 下载最新的 `LidGuard-<版本>-arm64.dmg`。
+1. 从 [GitHub Releases](https://github.com/aermin/LidGuard/releases) 下载 `LidGuard-1.0.0-preview.1-arm64.dmg`。
 2. 打开 DMG，将 **LidGuard** 拖入 **Applications（应用程序）**。
 3. 启动 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
 
 安装 Helper 时会同时安装 LaunchDaemon 和 `lidguard` CLI。完成首次授权后，日常切换“合盖运行 / 正常休眠”不再需要管理员密码。
+
+> [!NOTE]
+> 当前预览版使用临时签名。如果 macOS 首次启动时拦截，请在“应用程序”中右键 LidGuard，选择 **“打开”** 并确认一次。后续 Developer ID 签名并完成公证的正式版将不需要这一步。
 
 ### 日常使用
 
