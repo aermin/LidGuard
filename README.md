@@ -1,50 +1,50 @@
 <div align="center">
 
-**简体中文** · [English](README.en.md)
+[简体中文](README.md) · **English**
 
-# LidGuard · 合盖守护
+# LidGuard
 
-**出门要合上 Mac，但 Codex 等本地 Agent 和手机远控不该被迫中断。LidGuard 让它在保护策略下继续工作。**
+**Close your Mac before heading out without interrupting Codex, other local agents, or remote access. LidGuard keeps them running under configurable safeguards.**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
 [![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
 
-轻量菜单栏 App · 受限 root helper · CLI · 不接管显示器 · 不安装 Agent hooks
+Lightweight menu bar app · Restricted root helper · CLI · No display takeover · No agent hooks
 
 </div>
 
-准备出门时，你可能必须合上 Mac 放进保护套或背包，但 **Codex 等本地 Agent、下载或构建任务仍在执行**；也可能把 Mac 留在家里或工位，希望继续通过手机远程查看和操作。macOS 默认会在合盖后进入睡眠，这些任务和远程连接也会随之停止。
+You may need to close your Mac and put it in a sleeve or bag while **Codex, another local agent, a download, or a build is still running**. You may also leave the Mac at home or at your desk and continue viewing and controlling it from your phone. By default, macOS sleeps when the lid is closed, stopping those tasks and remote connections.
 
-LidGuard 让你主动选择 Mac 合盖后的行为：需要继续工作时保持运行，并通过定时、低电量和系统热状态保护，在触发条件后自动恢复正常休眠。它提供两个明确状态：
+LidGuard lets you choose what happens after the lid closes. It can keep the Mac running when needed, then automatically restore normal sleep when a timer, low-battery threshold, or system thermal safeguard is triggered. It exposes two clear modes:
 
-- **合盖运行**：合上屏幕后，Agent、任务和远程连接继续运行，同时启用你选择的保护策略。
-- **正常休眠**：恢复 Mac 默认行为，合盖后正常进入睡眠。
+- **Keep Running with Lid Closed**: agents, tasks, and remote connections continue after the lid closes, under the safeguards you select.
+- **Normal Lid Sleep**: restores the default macOS behavior so the Mac sleeps normally when closed.
 
-LidGuard 只管理“合盖后是否继续运行”，不接管屏幕或改动其他睡眠设置。
+LidGuard only manages whether the Mac keeps running with the lid closed. It does not take over the display or alter unrelated sleep settings.
 
 > [!WARNING]
-> 在保护套、背包或其他密闭空间内运行 Mac 可能积热。LidGuard 提供热状态保护，但不能消除物理散热风险；完全手动且不限时运行需要二次确认。
+> Running a Mac inside a sleeve, backpack, or other enclosed space can trap heat. LidGuard provides thermal safeguards, but it cannot eliminate physical cooling risks. Manual unlimited sessions require an additional confirmation.
 
-## 快速开始
+## Quick Start
 
-### 日常使用
+### Daily Use
 
-1. 点击菜单栏中的 LidGuard 图标。
-2. 选择 **“合盖运行”**，设置保护策略和运行时长，然后点击 **“开始合盖运行”**。
-3. 不再需要保持运行时，选择 **“正常休眠”**，Mac 就会恢复默认的合盖睡眠行为。
+1. Click the LidGuard icon in the menu bar.
+2. Select **Keep Running with Lid Closed (`合盖运行`)**, choose a protection profile and duration, then click **Start (`开始合盖运行`)**.
+3. When continuous operation is no longer needed, select **Normal Lid Sleep (`正常休眠`)** to restore the default macOS lid behavior.
 
-运行期间可以随时查看剩余时间、电量、供电方式和系统热状态，也可以调整当前会话的保护策略。
+While a session is active, you can view its remaining time, battery level, power source, and system thermal state, or adjust its safeguards.
 
-### 环境
+### Requirements
 
 - Apple Silicon Mac
-- macOS 13 或更高版本
+- macOS 13 or later
 - Xcode Command Line Tools / Swift 5.10
-- 当前本机版本仅使用临时签名，不是可分发安装包
+- The current local v1 uses ad-hoc signing and is not a distributable installer
 
-### 构建、测试与安装
+### Build, Test, and Install
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -55,57 +55,57 @@ make package
 make install
 ```
 
-`make install` 会：
+`make install` will:
 
-1. 构建 `dist/LidGuard.app`。
-2. 请求一次管理员授权。
-3. 安装受限 helper、LaunchDaemon 和 `/usr/local/bin/lidguard`。
-4. 打开 LidGuard 菜单栏 App。
+1. Build `dist/LidGuard.app`.
+2. Request administrator authorization once.
+3. Install the restricted helper, LaunchDaemon, and `/usr/local/bin/lidguard`.
+4. Open the LidGuard menu bar app.
 
-安装后，日常切换模式不应再次要求管理员授权。
+Switching modes during normal use should not request administrator authorization again.
 
-本机 v1 使用临时签名，每次重新构建 App 都会产生新的代码哈希，因此执行 `make install` 更新开发版本时需要重新授权一次。LidGuard 会识别这种签名失配，并在主面板显示“重新授权 Helper”，不会把它误报为 helper 丢失。
+Local v1 builds use ad-hoc signatures. Rebuilding the app generates a new code hash, so updating a development build with `make install` requires authorization again. LidGuard detects this signature mismatch and displays **Reauthorize Helper (`重新授权 Helper`)** instead of incorrectly reporting the helper as missing.
 
-## 界面
+## Interface
 
 <p align="center">
-  <img src="docs/assets/lidguard-expanded.png" alt="LidGuard 完整展开控制面板" width="560">
+  <img src="docs/assets/lidguard-expanded.png" alt="Expanded LidGuard control panel" width="560">
 </p>
 
-<p align="center"><sub>完整展开面板：模式切换、设备状态、当前会话、保护策略、运行时长和低电量阈值集中在一个菜单中。</sub></p>
+<p align="center"><sub>The expanded panel keeps mode switching, device status, the current session, protection profile, duration, and low-battery threshold in one menu.</sub></p>
 
-低电量阈值可直接在保护策略中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
+The low-battery threshold is configurable directly in the protection panel. Strict mode uses a fixed 30% threshold, Balanced mode supports 10%-50%, and Manual mode exposes the same threshold control after low-battery protection is enabled.
 
 <table>
   <tr>
-    <td align="center"><strong>合盖运行</strong></td>
-    <td align="center"><strong>正常合盖休眠</strong></td>
+    <td align="center"><strong>Keep Running with Lid Closed</strong></td>
+    <td align="center"><strong>Normal Lid Sleep</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard 合盖运行界面" width="360"></td>
-    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard 正常合盖休眠界面" width="360"></td>
+    <td><img src="docs/assets/lidguard-active.png" alt="LidGuard active session" width="360"></td>
+    <td><img src="docs/assets/lidguard-normal.png" alt="LidGuard normal sleep mode" width="360"></td>
   </tr>
   <tr>
-    <td>显示当前策略、时长、低电量阈值、热状态和供电方式。</td>
-    <td>不显示无意义的保护倒计时，需要时再展开合盖运行配置。</td>
+    <td>Shows the current profile, duration, low-battery threshold, thermal state, and power source.</td>
+    <td>Hides irrelevant protection countdowns and expands session configuration only when needed.</td>
   </tr>
 </table>
 
-## 三种保护策略
+## Protection Profiles
 
-| 策略 | 时长 | 低电量保护 | 热状态保护 | 适合场景 |
+| Profile | Duration | Low-battery safeguard | Thermal safeguard | Best for |
 | --- | --- | --- | --- | --- |
-| **严格** | 必须设置 30 分钟至 8 小时 | 固定 30% | `serious` / `critical` 自动恢复 | 临时离开、风险优先 |
-| **平衡** | 预设、自定义或不限时 | 默认 20%，可调 10%–50% | `serious` / `critical` 自动恢复 | 日常远控和 Agent 任务 |
-| **完全手动** | 预设、自定义或不限时 | 默认关闭，可手动启用 | `serious` 警告，`critical` 强制恢复 | 用户明确接管风险 |
+| **Strict** | Required, 30 minutes to 8 hours | Fixed at 30% | Restore sleep at `serious` or `critical` | Short absences, safety first |
+| **Balanced** | Preset, custom, or unlimited | 20% by default, adjustable from 10%-50% | Restore sleep at `serious` or `critical` | Everyday remote access and agent tasks |
+| **Manual** | Preset, custom, or unlimited | Off by default, optional | Warn at `serious`; always restore sleep at `critical` | Users explicitly accepting more risk |
 
-定时任务最长 7 天；到期前 5 分钟发送通知。低电量保护只在电池供电且未充电时触发。
+Custom sessions can run for up to 7 days. LidGuard sends a notification 5 minutes before expiration. Low-battery protection triggers only while running on battery and not charging.
 
 ## CLI
 
-### 安装 CLI
+### Install the CLI
 
-CLI 不需要单独安装。完成上面的源码安装即可：
+The CLI does not require a separate installation. Complete the source installation above:
 
 ```bash
 git clone https://github.com/aermin/LidGuard.git
@@ -113,13 +113,13 @@ cd LidGuard
 make install
 ```
 
-`make install` 会同时安装菜单栏 App、受限 helper 和 CLI，并将 CLI 放到：
+`make install` installs the menu bar app, restricted helper, and CLI together. The CLI is placed at:
 
 ```text
 /usr/local/bin/lidguard
 ```
 
-安装完成后可以这样确认：
+Verify the installation with:
 
 ```bash
 command -v lidguard
@@ -127,116 +127,116 @@ lidguard doctor
 lidguard status
 ```
 
-如果终端提示 `command not found`，先直接执行 `/usr/local/bin/lidguard doctor`。若直接执行可用，请确认 shell 的 `PATH` 包含 `/usr/local/bin`。
+If the shell reports `command not found`, try `/usr/local/bin/lidguard doctor` directly. If that works, make sure `/usr/local/bin` is included in your shell's `PATH`.
 
 > [!NOTE]
-> 不建议只从构建目录复制 CLI。CLI 需要与 helper 一同安装，并由安装流程登记代码签名要求；更新源码版本时也应重新执行 `make install`。
+> Do not copy only the CLI binary from the build directory. The CLI must be installed together with the helper so the installation process can register its code-signing requirement. Run `make install` again when updating a source build.
 
-### 使用
+### Usage
 
 ```bash
-# 查看当前模式、供电、热状态和保护策略
+# Show the current mode, power source, thermal state, and safeguards
 lidguard status
 lidguard status --json
 
-# 平衡模式运行 4 小时
+# Run a Balanced session for 4 hours
 lidguard start --profile balanced --for 4h
 
-# 严格模式运行至指定时间
+# Run a Strict session until a specific time
 lidguard start --profile strict --until 2026-08-10T23:30:00+08:00
 
-# 完全手动、不限时，需要显式确认风险
+# Run a Manual unlimited session with explicit risk confirmation
 lidguard start --profile manual --unlimited --confirm-risk
 
-# 在当前结束时间基础上延长 2 小时
+# Extend the current deadline by 2 hours
 lidguard extend --for 2h
 
-# 立即恢复正常合盖休眠
+# Immediately restore normal lid sleep
 lidguard stop
 
-# 检查 helper、协议、CLI 和 SleepDisabled
+# Check the helper, protocol, CLI, and SleepDisabled state
 lidguard doctor
 ```
 
-LidGuard 不安装 Codex hooks。Agent 需要显式调用 CLI，不会因为任务开始或结束自动改变整台 Mac 的电源状态。
+LidGuard does not install Codex hooks. Agents must invoke the CLI explicitly, so starting or finishing a task never changes the entire Mac's power state automatically.
 
-## 为什么做 LidGuard
+## Why LidGuard
 
-通用防休眠工具通常同时影响显示器、系统空闲休眠或其他电源行为。对于远程控制和 Agent 场景，真正需要的是一个边界清晰、容易恢复的开关：
+General-purpose keep-awake tools often affect the display, idle sleep, or other power behavior at the same time. Remote-control and agent workflows need a narrower switch with clear recovery behavior:
 
-| 目标 | LidGuard 的处理 |
+| Goal | LidGuard behavior |
 | --- | --- |
-| 合盖后任务继续执行 | 只切换系统 `SleepDisabled` 状态 |
-| 远程桌面继续可见、可控 | 不创建显示器防休眠断言或虚拟显示器 |
-| App 退出后保护仍生效 | 定时和保护策略由 LaunchDaemon helper 持久执行 |
-| 不想每次输入管理员密码 | 首次安装 helper 时授权一次，之后通过受限 XPC 调用 |
-| 发生低电量或过热 | 自动恢复 `disablesleep=0` 并记录停止原因 |
-| 外部工具修改电源状态 | 不反复争抢；结束会话或标记为外部管理状态 |
+| Keep tasks running after the lid closes | Changes only the system `SleepDisabled` state |
+| Keep remote desktop visible and controllable | Creates no display sleep assertion or virtual display |
+| Preserve safeguards after the app quits | The LaunchDaemon helper persists timers and policies |
+| Avoid entering an admin password every time | Authorize the helper once, then use restricted XPC calls |
+| Recover from low battery or overheating | Restore `disablesleep=0` and record the stop reason |
+| Handle external power-state changes | Do not fight them repeatedly; end the session or report external management |
 
-## 安全边界
+## Security Boundaries
 
-- Helper 运行于 root，但只暴露四类结构化操作。
-- Helper 校验调用者 UID 和安装时记录的代码签名要求。
-- App、CLI 或 helper 重启后，会话、截止时间和保护策略仍可恢复。
-- “恢复正常休眠”只执行 `disablesleep=0`，不会覆盖其他 `pmset` 设置。
-- 外部程序关闭 `SleepDisabled` 时，LidGuard 结束当前会话，不会循环重开。
-- 外部程序开启 `SleepDisabled` 时，界面标记为非 LidGuard 管理状态。
-- 卸载 helper 前会先恢复正常休眠。
+- The helper runs as root but exposes only four structured operation types.
+- The helper validates the caller UID and the code-signing requirement recorded during installation.
+- Sessions, deadlines, and safeguards survive app, CLI, or helper restarts.
+- **Restore Normal Sleep** changes only `disablesleep=0`; it does not overwrite other `pmset` settings.
+- If another process disables `SleepDisabled`, LidGuard ends the current session instead of repeatedly enabling it again.
+- If another process enables `SleepDisabled`, the UI reports that the state is not managed by LidGuard.
+- Uninstalling the helper restores normal sleep first.
 
-## 验证
+## Verification
 
-自动测试覆盖策略矩阵、定时解析、低电量、四级热状态、状态恢复、外部覆盖和 `pmset` 回读错误，测试使用假的电源控制器与传感器，不会在测试期间真实修改系统电源状态。
+Automated tests cover the policy matrix, time parsing, low-battery behavior, all four thermal states, state recovery, external overrides, and `pmset` readback failures. Tests use fake power controllers and sensors, so they do not modify the real system power state.
 
 ```text
 Tests: 16 passed, 0 failed
 ```
 
-当前实机已验证：
+Verified on the current test machine:
 
-- 合盖运行时，vivo 远控保持可见、可操作，Agent 继续执行。
-- 正常休眠时，合盖后远控不可操作，系统恢复默认睡眠行为。
-- App 退出后，helper 仍能执行定时、低电量和热状态保护。
-- LidGuard 不新增 `caffeinate` 或显示器防休眠断言。
+- During an active session, vivo remote control remains visible and usable after the lid closes, and agents continue running.
+- In Normal Lid Sleep mode, remote control becomes unusable after the lid closes and macOS returns to its default sleep behavior.
+- The helper continues enforcing timers, low-battery safeguards, and thermal safeguards after the app quits.
+- LidGuard adds no `caffeinate` or display sleep assertions.
 
-## 卸载
+## Uninstall
 
-在 App 设置中选择 **“恢复休眠并卸载 Helper”**。该操作会先恢复 `disablesleep=0`，再删除 LaunchDaemon、helper 和 CLI；App 和源码会保留。
+In the app settings, select **Restore Sleep and Uninstall Helper (`恢复休眠并卸载 Helper`)**. LidGuard first restores `disablesleep=0`, then removes the LaunchDaemon, helper, and CLI. The app and source code remain in place.
 
-## 已知限制
+## Known Limitations
 
 > [!IMPORTANT]
-> `pmset disablesleep` 没有 Apple 公开文档提供稳定性保证。系统升级后，应重新验证合盖、唤醒和远程控制行为。
+> Apple does not publicly document `pmset disablesleep` as a stable interface. Re-test lid-close, wake, and remote-control behavior after macOS upgrades.
 
-- 当前只在 Apple Silicon、macOS 15.6.1 上完成实机验收。
-- 本机 v1 使用临时签名，尚未完成 Developer ID 签名、公证和公开分发。
-- LidGuard 使用 `ProcessInfo.thermalState` 的系统等级，不读取私有 SMC 摄氏温度。
-- LidGuard 不能保证所有远程控制软件都能在合盖状态下保持图像输出。
-- 即使软件未报告 `critical`，也不代表保护套或背包内运行是安全的。
+- End-to-end testing has currently been completed only on an Apple Silicon Mac running macOS 15.6.1.
+- Local v1 uses ad-hoc signing and has not been prepared for Developer ID distribution or notarization.
+- LidGuard uses the system levels from `ProcessInfo.thermalState`; it does not read private SMC temperature values.
+- LidGuard cannot guarantee that every remote-control application will keep producing video while the lid is closed.
+- The absence of a reported `critical` thermal state does not mean running inside a sleeve or backpack is safe.
 
-## 项目结构
+## Project Structure
 
 ```text
-LidGuardCore       共享模型、策略、时间解析和 XPC 协议
-LidGuardApp        SwiftUI 菜单栏 App 与设置页
-LidGuardHelper     特权 helper 入口
-LidGuardHelperKit  电源控制、传感器、状态持久化和策略引擎
-LidGuardCLI        lidguard 命令行工具
-LidGuardTests      无副作用的策略与 helper 测试
+LidGuardCore       Shared models, policies, time parsing, and XPC protocol
+LidGuardApp        SwiftUI menu bar app and settings
+LidGuardHelper     Privileged helper entry point
+LidGuardHelperKit  Power control, sensors, state persistence, and policy engine
+LidGuardCLI        lidguard command-line interface
+LidGuardTests      Side-effect-free policy and helper tests
 ```
 
-## 工作原理
+## How It Works
 
 ```mermaid
 flowchart LR
-    App["菜单栏 App"] -->|"start / stop / update / status"| XPC["受限 XPC 接口"]
-    CLI["lidguard CLI"] -->|"固定结构请求"| XPC
-    XPC --> Helper["root helper · LaunchDaemon"]
-    Helper --> Policy["定时 / 电量 / 热状态策略"]
+    App["Menu Bar App"] -->|"start / stop / update / status"| XPC["Restricted XPC API"]
+    CLI["lidguard CLI"] -->|"Structured requests"| XPC
+    XPC --> Helper["Root Helper · LaunchDaemon"]
+    Helper --> Policy["Timer / Battery / Thermal Policies"]
     Helper --> PM["pmset -a disablesleep 1 / 0"]
-    PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
-    Verify --> State["持久化状态与最后停止原因"]
+    PM --> Verify["Read pmset -g and verify SleepDisabled"]
+    Verify --> State["Persist State and Last Stop Reason"]
 ```
 
-Helper 只接受固定的 `start`、`stop`、`update` 和 `status` 操作，不接受任意命令字符串或文件路径。每次修改后都会读取 `pmset -g` 验证结果，失败时不会虚假显示“合盖运行中”。
+The helper accepts only the fixed `start`, `stop`, `update`, and `status` operations. It does not accept arbitrary command strings or file paths. After every change, it reads `pmset -g` to verify the result and never falsely reports an active session after a failed update.
 
-技术上，“合盖运行”和“正常休眠”分别执行 `pmset -a disablesleep 1` 和 `pmset -a disablesleep 0`。LidGuard 不创建虚拟显示器、不捕获屏幕、不修改 `sleep` / `displaysleep`，也不通过 `caffeinate` 添加额外睡眠断言。
+Internally, **Keep Running with Lid Closed** and **Normal Lid Sleep** execute `pmset -a disablesleep 1` and `pmset -a disablesleep 0`, respectively. LidGuard creates no virtual display, performs no screen capture, changes neither `sleep` nor `displaysleep`, and adds no extra sleep assertion through `caffeinate`.
