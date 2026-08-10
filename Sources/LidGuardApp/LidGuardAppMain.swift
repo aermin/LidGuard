@@ -12,9 +12,5 @@ struct LidGuardMenuBarApp: App {
                 .accessibilityLabel("合盖守护")
         }
         .menuBarExtraStyle(.window)
-
-        Settings {
-            SettingsContentView(store: store)
-        }
     }
 }

@@ -86,7 +86,7 @@ struct MenuContentView: View {
 
             Divider()
             HStack {
-                Button("设置") { openSettingsWindow() }
+                Button("设置") { SettingsWindowController.shared.show(store: store) }
                 Spacer()
                 Button("刷新") { Task { await store.refresh() } }
                 Button("退出") { NSApplication.shared.terminate(nil) }
@@ -384,10 +384,6 @@ struct MenuContentView: View {
         "将在 \(deadline.formatted(date: .omitted, time: .shortened)) 自动恢复"
     }
 
-    private func openSettingsWindow() {
-        NSApplication.shared.activate(ignoringOtherApps: true)
-        NSApplication.shared.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-    }
 }
 
 struct SettingsContentView: View {
