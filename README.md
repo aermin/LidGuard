@@ -17,10 +17,10 @@ Menu bar app · Time, battery, and thermal safeguards · CLI · No virtual displ
 </div>
 
 <p align="center">
-  <img src="docs/assets/lidguard-pain-point.png" alt="Without LidGuard, a developer carries an open Mac to keep an agent running; with LidGuard, the Mac is closed in a backpack while the task continues with safeguards" width="960">
+  <img src="docs/assets/lidguard-open-laptop-candid.jpg" alt="A developer carrying a partially open laptop on the street so a coding task can keep running" width="560">
 </p>
 
-<p align="center"><sub>The awkward workaround is familiar: keep the laptop open so the task does not stop. LidGuard lets you close it and keep working under timer, battery, and thermal safeguards.</sub></p>
+<p align="center"><sub>Ever carried your Mac like this just to keep a coding task alive? LidGuard lets you close the lid and keep working under timer, battery, and thermal safeguards.</sub></p>
 
 By default, macOS sleeps when the lid closes, interrupting Codex tasks, builds, downloads, and remote access. LidGuard gives you two clear modes and can automatically restore normal sleep when a timer expires, the battery runs low, or macOS reports serious thermal pressure.
 
