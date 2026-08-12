@@ -18,6 +18,7 @@ do {
     }
     let engine = try GuardEngine(
         powerController: PMSetPowerController(),
+        automaticLockController: IOKitAutomaticLockController(),
         stateStore: JSONStateStore(),
         sensors: SystemSensors()
     )

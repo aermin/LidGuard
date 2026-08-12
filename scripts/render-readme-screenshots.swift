@@ -28,6 +28,8 @@ private struct Copy {
     let balanced: String
     let noTimeLimit: String
     let lowBatteryThreshold: String
+    let preventAutomaticLock: String
+    let automaticLockActive: String
     let adjustSafeguards: String
     let settings: String
     let refresh: String
@@ -62,6 +64,8 @@ private struct Copy {
         balanced: "Balanced",
         noTimeLimit: "No time limit",
         lowBatteryThreshold: "Low-battery threshold",
+        preventAutomaticLock: "Prevent automatic lock",
+        automaticLockActive: "Display and user-activity protection active",
         adjustSafeguards: "Adjust Safeguards",
         settings: "Settings",
         refresh: "Refresh",
@@ -97,6 +101,8 @@ private struct Copy {
         balanced: "平衡",
         noTimeLimit: "不限时运行",
         lowBatteryThreshold: "低电量保护",
+        preventAutomaticLock: "防止自动锁屏",
+        automaticLockActive: "显示器与用户活跃保护已生效",
         adjustSafeguards: "调整保护策略",
         settings: "设置",
         refresh: "刷新",
@@ -335,6 +341,12 @@ private struct ActiveSession: View {
             Text("\(copy.lowBatteryThreshold): \(threshold)%")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            Label(copy.preventAutomaticLock, systemImage: "checkmark.circle.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Palette.green)
+            Text(copy.automaticLockActive)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -389,7 +401,7 @@ private struct ActivePanel: View {
             Footer(copy: copy)
         }
         .padding(16)
-        .frame(width: 360, height: expanded ? 639.5 : 395.5, alignment: .topLeading)
+        .frame(width: 360, height: expanded ? 683.5 : 439.5, alignment: .topLeading)
         .background(dark ? Palette.darkBackground : Palette.lightBackground)
         .environment(\.colorScheme, dark ? .dark : .light)
     }

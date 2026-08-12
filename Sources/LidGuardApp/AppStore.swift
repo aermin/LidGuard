@@ -51,6 +51,7 @@ final class AppStore: ObservableObject {
     @Published var durationChoice: DurationChoice = .twoHours
     @Published var customDeadline = Date().addingTimeInterval(2 * 60 * 60)
     @Published var manualBatteryProtection = false
+    @Published var preventAutomaticLock = false
     @Published var manualRiskConfirmationPending = false
     @Published var isWorking = false
     @Published private(set) var helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
@@ -161,6 +162,7 @@ final class AppStore: ObservableObject {
             durationChoice = .unlimited
         }
         manualBatteryProtection = session.batteryThreshold != nil
+        preventAutomaticLock = session.preventAutomaticLock
         if session.profile != .strict, let threshold = session.batteryThreshold {
             balancedBatteryThreshold = threshold
         }
@@ -192,6 +194,7 @@ final class AppStore: ObservableObject {
             profile: selectedProfile,
             deadline: makeDeadline(),
             batteryThreshold: threshold,
+            preventAutomaticLock: preventAutomaticLock,
             confirmedManualUnlimitedRisk: manualRiskConfirmed
         )
         let shouldUpdate = status?.mode == .active && status?.session?.profile == selectedProfile
@@ -200,6 +203,7 @@ final class AppStore: ObservableObject {
             let update = UpdateSessionRequest(
                 deadline: request.deadline,
                 batteryThreshold: request.batteryThreshold,
+                preventAutomaticLock: request.preventAutomaticLock,
                 confirmedManualUnlimitedRisk: request.confirmedManualUnlimitedRisk
             )
             perform { client in
@@ -220,6 +224,19 @@ final class AppStore: ObservableObject {
 
     func stopSession() {
         perform { client in try client.stop() }
+    }
+
+    func setAutomaticLockPrevention(_ enabled: Bool) {
+        guard let session = status?.session else { return }
+        let request = UpdateSessionRequest(
+            deadline: session.deadline,
+            batteryThreshold: session.batteryThreshold,
+            preventAutomaticLock: enabled,
+            confirmedManualUnlimitedRisk: session.profile == .manual && session.deadline == nil
+        )
+        perform { client in
+            try client.update(request)
+        }
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {

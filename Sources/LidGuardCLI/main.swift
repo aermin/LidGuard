@@ -30,7 +30,13 @@ struct ParsedArguments {
             guard argument.hasPrefix("--") else {
                 throw CLIError.usage("无法识别的参数：\(argument)\n\n\(usage)")
             }
-            if ["--unlimited", "--confirm-risk", "--json"].contains(argument) {
+            if [
+                "--unlimited",
+                "--confirm-risk",
+                "--json",
+                "--prevent-auto-lock",
+                "--allow-auto-lock",
+            ].contains(argument) {
                 flags.insert(argument)
                 index += 1
                 continue
@@ -51,8 +57,8 @@ let usage = """
 
 用法：
   lidguard status [--json]
-  lidguard start --profile <strict|balanced|manual> (--for 2h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--confirm-risk]
-  lidguard extend (--for 1h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--confirm-risk]
+  lidguard start --profile <strict|balanced|manual> (--for 2h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--prevent-auto-lock] [--confirm-risk]
+  lidguard extend (--for 1h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--prevent-auto-lock | --allow-auto-lock] [--confirm-risk]
   lidguard stop
   lidguard doctor
 """
@@ -71,6 +77,17 @@ func parseBattery(_ value: String?) throws -> Int? {
         throw CLIError.usage("--battery 必须是 10-50 或 off")
     }
     return threshold
+}
+
+func requestedAutomaticLockPrevention(flags: Set<String>, current: Bool = false) throws -> Bool {
+    let prevent = flags.contains("--prevent-auto-lock")
+    let allow = flags.contains("--allow-auto-lock")
+    guard !(prevent && allow) else {
+        throw CLIError.usage("--prevent-auto-lock 与 --allow-auto-lock 不能同时使用")
+    }
+    if prevent { return true }
+    if allow { return false }
+    return current
 }
 
 func requestedDeadline(
@@ -103,6 +120,7 @@ func printStatus(_ status: StatusSnapshot) {
     }
     print("状态：\(mode)")
     print("SleepDisabled：\(status.sleepDisabled.map { $0 ? "1" : "0" } ?? "未知")")
+    print("防自动锁屏断言：\(status.automaticLockPreventionActive ? "生效" : "未启用")")
     print("热状态：\(status.thermalLevel.displayName)")
     if let percentage = status.battery.percentage {
         print("电量：\(percentage)%（\(status.battery.source.displayName)）")
@@ -117,6 +135,7 @@ func printStatus(_ status: StatusSnapshot) {
             print("结束：不限时")
         }
         print("低电量保护：\(session.batteryThreshold.map { "\($0)%" } ?? "关闭")")
+        print("防自动锁屏：\(session.preventAutomaticLock ? "开启" : "关闭")")
     }
     if status.lastStopReason != .none {
         print("最近恢复原因：\(status.lastStopReason.displayName)")
@@ -146,6 +165,7 @@ func run() throws {
             profile: profile,
             deadline: deadline,
             batteryThreshold: try parseBattery(parsed.options["--battery"]),
+            preventAutomaticLock: try requestedAutomaticLockPrevention(flags: parsed.flags),
             confirmedManualUnlimitedRisk: parsed.flags.contains("--confirm-risk")
         )
         let result = try client.start(request)
@@ -175,6 +195,10 @@ func run() throws {
         let request = UpdateSessionRequest(
             deadline: deadline,
             batteryThreshold: threshold,
+            preventAutomaticLock: try requestedAutomaticLockPrevention(
+                flags: parsed.flags,
+                current: session.preventAutomaticLock
+            ),
             confirmedManualUnlimitedRisk: parsed.flags.contains("--confirm-risk")
         )
         let result = try client.update(request)

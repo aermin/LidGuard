@@ -141,6 +141,7 @@ public struct SessionRequest: Codable, Equatable, Sendable {
     public var profile: RunProfile
     public var deadline: Date?
     public var batteryThreshold: Int?
+    public var preventAutomaticLock: Bool
     public var confirmedManualUnlimitedRisk: Bool
 
     public init(
@@ -148,12 +149,14 @@ public struct SessionRequest: Codable, Equatable, Sendable {
         profile: RunProfile,
         deadline: Date?,
         batteryThreshold: Int? = nil,
+        preventAutomaticLock: Bool = false,
         confirmedManualUnlimitedRisk: Bool = false
     ) {
         self.protocolVersion = protocolVersion
         self.profile = profile
         self.deadline = deadline
         self.batteryThreshold = batteryThreshold
+        self.preventAutomaticLock = preventAutomaticLock
         self.confirmedManualUnlimitedRisk = confirmedManualUnlimitedRisk
     }
 }
@@ -162,17 +165,20 @@ public struct UpdateSessionRequest: Codable, Equatable, Sendable {
     public var protocolVersion: Int
     public var deadline: Date?
     public var batteryThreshold: Int?
+    public var preventAutomaticLock: Bool
     public var confirmedManualUnlimitedRisk: Bool
 
     public init(
         protocolVersion: Int = LidGuardConstants.protocolVersion,
         deadline: Date?,
         batteryThreshold: Int? = nil,
+        preventAutomaticLock: Bool = false,
         confirmedManualUnlimitedRisk: Bool = false
     ) {
         self.protocolVersion = protocolVersion
         self.deadline = deadline
         self.batteryThreshold = batteryThreshold
+        self.preventAutomaticLock = preventAutomaticLock
         self.confirmedManualUnlimitedRisk = confirmedManualUnlimitedRisk
     }
 }
@@ -196,6 +202,7 @@ public struct GuardSession: Codable, Equatable, Sendable {
     public var startedAt: Date
     public var deadline: Date?
     public var batteryThreshold: Int?
+    public var preventAutomaticLock: Bool
     public var fiveMinuteWarningSent: Bool
     public var seriousThermalWarningActive: Bool
 
@@ -205,6 +212,7 @@ public struct GuardSession: Codable, Equatable, Sendable {
         startedAt: Date,
         deadline: Date?,
         batteryThreshold: Int?,
+        preventAutomaticLock: Bool = false,
         fiveMinuteWarningSent: Bool = false,
         seriousThermalWarningActive: Bool = false
     ) {
@@ -213,8 +221,35 @@ public struct GuardSession: Codable, Equatable, Sendable {
         self.startedAt = startedAt
         self.deadline = deadline
         self.batteryThreshold = batteryThreshold
+        self.preventAutomaticLock = preventAutomaticLock
         self.fiveMinuteWarningSent = fiveMinuteWarningSent
         self.seriousThermalWarningActive = seriousThermalWarningActive
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case profile
+        case startedAt
+        case deadline
+        case batteryThreshold
+        case preventAutomaticLock
+        case fiveMinuteWarningSent
+        case seriousThermalWarningActive
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        profile = try container.decode(RunProfile.self, forKey: .profile)
+        startedAt = try container.decode(Date.self, forKey: .startedAt)
+        deadline = try container.decodeIfPresent(Date.self, forKey: .deadline)
+        batteryThreshold = try container.decodeIfPresent(Int.self, forKey: .batteryThreshold)
+        preventAutomaticLock = try container.decodeIfPresent(Bool.self, forKey: .preventAutomaticLock) ?? false
+        fiveMinuteWarningSent = try container.decodeIfPresent(Bool.self, forKey: .fiveMinuteWarningSent) ?? false
+        seriousThermalWarningActive = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .seriousThermalWarningActive
+        ) ?? false
     }
 }
 
@@ -248,6 +283,7 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
     public var helperVersion: String
     public var mode: GuardMode
     public var sleepDisabled: Bool?
+    public var automaticLockPreventionActive: Bool
     public var session: GuardSession?
     public var thermalLevel: ThermalLevel
     public var battery: BatterySnapshot
@@ -261,6 +297,7 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
         helperVersion: String = LidGuardConstants.helperVersion,
         mode: GuardMode,
         sleepDisabled: Bool?,
+        automaticLockPreventionActive: Bool,
         session: GuardSession?,
         thermalLevel: ThermalLevel,
         battery: BatterySnapshot,
@@ -273,6 +310,7 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
         self.helperVersion = helperVersion
         self.mode = mode
         self.sleepDisabled = sleepDisabled
+        self.automaticLockPreventionActive = automaticLockPreventionActive
         self.session = session
         self.thermalLevel = thermalLevel
         self.battery = battery

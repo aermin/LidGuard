@@ -4,6 +4,7 @@ import os
 
 public final class GuardEngine {
     private let powerController: PowerControlling
+    private let automaticLockController: AutomaticLockControlling
     private let stateStore: StateStoring
     private let sensors: SensorReading
     private let now: () -> Date
@@ -14,12 +15,14 @@ public final class GuardEngine {
 
     public init(
         powerController: PowerControlling,
+        automaticLockController: AutomaticLockControlling,
         stateStore: StateStoring,
         sensors: SensorReading,
         now: @escaping () -> Date = Date.init,
         startTimer: Bool = true
     ) throws {
         self.powerController = powerController
+        self.automaticLockController = automaticLockController
         self.stateStore = stateStore
         self.sensors = sensors
         self.now = now
@@ -60,8 +63,11 @@ public final class GuardEngine {
     public func start(request: SessionRequest) throws -> OperationResult {
         try queue.sync {
             let session = try SessionPolicy.makeSession(from: request, now: now())
+            let previousSleepDisabled = try powerController.readSleepDisabled()
+            let previousAutomaticLockEnabled = automaticLockController.isEnabled
             do {
                 try powerController.setSleepDisabled(true)
+                try setAutomaticLockPrevention(session.preventAutomaticLock)
                 state.session = session
                 state.lastStopReason = .none
                 state.lastError = nil
@@ -75,7 +81,8 @@ public final class GuardEngine {
                 logger.info("Started session \(session.id.uuidString, privacy: .public)")
                 return OperationResult(success: true, message: "合盖运行已开启", status: makeStatus())
             } catch {
-                try? powerController.setSleepDisabled(false)
+                try? setAutomaticLockPrevention(previousAutomaticLockEnabled)
+                try? powerController.setSleepDisabled(previousSleepDisabled)
                 recordError(error)
                 throw error
             }
@@ -85,11 +92,22 @@ public final class GuardEngine {
     public func update(request: UpdateSessionRequest) throws -> OperationResult {
         try queue.sync {
             guard let session = state.session else { throw PolicyError.noActiveSession }
-            state.session = try SessionPolicy.update(session: session, with: request, now: now())
-            state.lastError = nil
-            state.lastChangedAt = now()
-            try stateStore.save(state)
-            return OperationResult(success: true, message: "会话保护已更新", status: makeStatus())
+            let updatedSession = try SessionPolicy.update(session: session, with: request, now: now())
+            let previousState = state
+            let previousAutomaticLockEnabled = automaticLockController.isEnabled
+            do {
+                try setAutomaticLockPrevention(updatedSession.preventAutomaticLock)
+                state.session = updatedSession
+                state.lastError = nil
+                state.lastChangedAt = now()
+                try stateStore.save(state)
+                return OperationResult(success: true, message: "会话保护已更新", status: makeStatus())
+            } catch {
+                state = previousState
+                try? setAutomaticLockPrevention(previousAutomaticLockEnabled)
+                recordError(error)
+                throw error
+            }
         }
     }
 
@@ -126,10 +144,10 @@ public final class GuardEngine {
             )
             state.lastChangedAt = now()
             try stateStore.save(state)
-            return
         }
 
         if state.session != nil, !sleepDisabled {
+            try? setAutomaticLockPrevention(false)
             state.session = nil
             state.lastStopReason = .externalOverride
             state.lastEvent = GuardEvent(
@@ -141,6 +159,16 @@ public final class GuardEngine {
             try stateStore.save(state)
         }
 
+        if let session = state.session, sleepDisabled {
+            do {
+                try setAutomaticLockPrevention(session.preventAutomaticLock)
+            } catch {
+                recordError(error)
+            }
+        } else {
+            try? setAutomaticLockPrevention(false)
+        }
+
         evaluate()
     }
 
@@ -149,11 +177,13 @@ public final class GuardEngine {
             let sleepDisabled = try powerController.readSleepDisabled()
 
             guard var session = state.session else {
+                try? setAutomaticLockPrevention(false)
                 state.lastError = nil
                 return
             }
 
             guard sleepDisabled else {
+                try? setAutomaticLockPrevention(false)
                 state.session = nil
                 state.lastStopReason = .externalOverride
                 state.lastEvent = GuardEvent(
@@ -177,6 +207,8 @@ public final class GuardEngine {
                 try stopInternal(reason: reason)
                 return
             }
+
+            try setAutomaticLockPrevention(session.preventAutomaticLock)
 
             var needsSave = false
             if SessionPolicy.shouldSendFiveMinuteWarning(session: session, now: now()) {
@@ -216,8 +248,15 @@ public final class GuardEngine {
     }
 
     private func stopInternal(reason: StopReason) throws {
+        let previousAutomaticLockEnabled = automaticLockController.isEnabled
         do {
-            try powerController.setSleepDisabled(false)
+            try setAutomaticLockPrevention(false)
+            do {
+                try powerController.setSleepDisabled(false)
+            } catch {
+                try? setAutomaticLockPrevention(previousAutomaticLockEnabled)
+                throw error
+            }
             state.session = nil
             state.lastStopReason = reason
             state.lastError = nil
@@ -247,6 +286,11 @@ public final class GuardEngine {
         logger.error("\(error.localizedDescription, privacy: .public)")
     }
 
+    private func setAutomaticLockPrevention(_ enabled: Bool) throws {
+        guard automaticLockController.isEnabled != enabled else { return }
+        try automaticLockController.setEnabled(enabled)
+    }
+
     private func makeStatus() -> StatusSnapshot {
         let sleepDisabled: Bool?
         do {
@@ -269,6 +313,7 @@ public final class GuardEngine {
         return StatusSnapshot(
             mode: mode,
             sleepDisabled: sleepDisabled,
+            automaticLockPreventionActive: automaticLockController.isEnabled,
             session: state.session,
             thermalLevel: sensors.currentThermalLevel(),
             battery: sensors.currentBattery(),

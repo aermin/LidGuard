@@ -33,6 +33,7 @@ struct MenuContentView: View {
                     sessionControls(
                         sectionTitle: "当前合盖运行设置",
                         guidance: "修改后会立即应用到当前会话。",
+                        includeAutomaticLockToggle: false,
                         actionTitle: "应用保护策略"
                     ) {
                         store.applySelectedSession()
@@ -59,6 +60,7 @@ struct MenuContentView: View {
                     sessionControls(
                         sectionTitle: "合盖运行设置",
                         guidance: "选择保护策略和运行时长，确认后才会开启合盖运行。",
+                        includeAutomaticLockToggle: true,
                         actionTitle: "开始合盖运行"
                     ) {
                         store.startSelectedSession()
@@ -229,6 +231,7 @@ struct MenuContentView: View {
     private func sessionControls(
         sectionTitle: String,
         guidance: String,
+        includeAutomaticLockToggle: Bool,
         actionTitle: String,
         action: @escaping () -> Void
     ) -> some View {
@@ -270,6 +273,10 @@ struct MenuContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
+            if includeAutomaticLockToggle {
+                automaticLockConfigurationToggle
+            }
+
             batteryProtectionControls
 
             Text(profileDescription)
@@ -282,6 +289,16 @@ struct MenuContentView: View {
                 .controlSize(.large)
                 .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
                 .frame(maxWidth: .infinity)
+        }
+    }
+
+    private var automaticLockConfigurationToggle: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Toggle("防止自动锁屏", isOn: $store.preventAutomaticLock)
+            Text("保持显示器唤醒，并定期刷新用户活跃状态；开启后会增加耗电。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -327,11 +344,31 @@ struct MenuContentView: View {
                 Text("低电量保护：\(session.batteryThreshold.map { "\($0)%" } ?? "关闭")")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                Toggle(
+                    "防止自动锁屏",
+                    isOn: Binding(
+                        get: { session.preventAutomaticLock },
+                        set: { store.setAutomaticLockPrevention($0) }
+                    )
+                )
+                .disabled(store.isWorking || store.helperRepairRequired)
+                Text(automaticLockStatusText)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.green.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var automaticLockStatusText: String {
+        guard store.status?.session?.preventAutomaticLock == true else {
+            return "关闭后由 macOS 管理屏保和自动锁屏。"
+        }
+        return store.status?.automaticLockPreventionActive == true
+            ? "显示器防休眠与用户活跃刷新均已生效。"
+            : "已请求开启，但系统断言尚未生效。"
     }
 
     private func metric(title: String, value: String, icon: String) -> some View {
@@ -420,6 +457,10 @@ struct SettingsContentView: View {
                 LabeledContent("协议版本", value: "\(store.status?.protocolVersion ?? 0)")
                 LabeledContent("Helper 版本", value: store.status?.helperVersion ?? "未连接")
                 LabeledContent("SleepDisabled", value: store.status?.sleepDisabled.map { $0 ? "1" : "0" } ?? "未知")
+                LabeledContent(
+                    "防自动锁屏断言",
+                    value: store.status?.automaticLockPreventionActive == true ? "生效" : "未启用"
+                )
                 if let error = store.errorMessage {
                     Text(error).foregroundStyle(.red)
                 }

@@ -15,6 +15,7 @@ enum TestFailure: Error, LocalizedError {
 final class FakePowerController: PowerControlling {
     var sleepDisabled: Bool
     var setValues: [Bool] = []
+    var failNextSet = false
 
     init(sleepDisabled: Bool) {
         self.sleepDisabled = sleepDisabled
@@ -24,7 +25,25 @@ final class FakePowerController: PowerControlling {
 
     func setSleepDisabled(_ enabled: Bool) throws {
         setValues.append(enabled)
+        if failNextSet {
+            failNextSet = false
+            throw TestFailure.failed("Simulated power write failure")
+        }
         sleepDisabled = enabled
+    }
+}
+
+final class FakeAutomaticLockController: AutomaticLockControlling {
+    var isEnabled: Bool
+    var setValues: [Bool] = []
+
+    init(isEnabled: Bool = false) {
+        self.isEnabled = isEnabled
+    }
+
+    func setEnabled(_ enabled: Bool) throws {
+        setValues.append(enabled)
+        isEnabled = enabled
     }
 }
 
@@ -121,6 +140,33 @@ runner.run("balanced accepts custom battery threshold") {
     try runner.expect(session.batteryThreshold == 35, "Balanced threshold must preserve selection")
 }
 
+runner.run("session preserves automatic lock preference") {
+    let session = try SessionPolicy.makeSession(
+        from: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
+    try runner.expect(session.preventAutomaticLock, "Automatic lock preference must be enabled")
+}
+
+runner.run("legacy session defaults automatic lock prevention off") {
+    let original = GuardSession(
+        profile: .balanced,
+        startedAt: Date(timeIntervalSince1970: 1_000),
+        deadline: nil,
+        batteryThreshold: 20,
+        preventAutomaticLock: true
+    )
+    let encoded = try LidGuardCoding.makeEncoder().encode(original)
+    var json = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] ?? [:]
+    json.removeValue(forKey: "preventAutomaticLock")
+    let legacyData = try JSONSerialization.data(withJSONObject: json)
+    let decoded = try LidGuardCoding.makeDecoder().decode(GuardSession.self, from: legacyData)
+    try runner.expect(!decoded.preventAutomaticLock, "Legacy sessions must default to disabled")
+}
+
 runner.run("manual accepts enabled battery threshold") {
     let session = try SessionPolicy.makeSession(
         from: SessionRequest(
@@ -198,8 +244,10 @@ runner.run("time parsing") {
 
 runner.run("first launch imports existing state") {
     let power = FakePowerController(sleepDisabled: true)
+    let automaticLock = FakeAutomaticLockController()
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: automaticLock,
         stateStore: MemoryStateStore(),
         sensors: FakeSensors(),
         startTimer: false
@@ -210,37 +258,152 @@ runner.run("first launch imports existing state") {
     try runner.expect(status.session?.deadline == nil, "Imported session must be unlimited")
     try runner.expect(status.session?.batteryThreshold == 20, "Imported threshold must be 20")
     try runner.expect(power.setValues.isEmpty, "Import must not rewrite pmset")
+    try runner.expect(!automaticLock.isEnabled, "Imported sessions must not prevent automatic lock")
 }
 
-runner.run("start and stop toggle only sleep disabled") {
+runner.run("start and stop manage sleep and automatic lock together") {
     let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: automaticLock,
+        stateStore: MemoryStateStore(PersistedState()),
+        sensors: FakeSensors(),
+        startTimer: false
+    )
+    _ = try engine.start(
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
+    _ = try engine.stop(request: StopRequest())
+    try runner.expect(power.setValues == [true, false], "Expected only true then false writes")
+    try runner.expect(automaticLock.setValues == [true, false], "Expected automatic lock enable then disable")
+}
+
+runner.run("update toggles automatic lock prevention") {
+    let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
+    let engine = try GuardEngine(
+        powerController: power,
+        automaticLockController: automaticLock,
         stateStore: MemoryStateStore(PersistedState()),
         sensors: FakeSensors(),
         startTimer: false
     )
     _ = try engine.start(request: SessionRequest(profile: .balanced, deadline: nil))
-    _ = try engine.stop(request: StopRequest())
-    try runner.expect(power.setValues == [true, false], "Expected only true then false writes")
+    _ = try engine.update(
+        request: UpdateSessionRequest(
+            deadline: nil,
+            batteryThreshold: 20,
+            preventAutomaticLock: true
+        )
+    )
+    try runner.expect(engine.status().session?.preventAutomaticLock == true, "Session must update")
+    try runner.expect(engine.status().automaticLockPreventionActive, "Assertion must be active")
+    try runner.expect(automaticLock.setValues == [true], "Expected one enable operation")
+}
+
+runner.run("evaluation restores missing automatic lock assertion") {
+    let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
+    let engine = try GuardEngine(
+        powerController: power,
+        automaticLockController: automaticLock,
+        stateStore: MemoryStateStore(PersistedState()),
+        sensors: FakeSensors(),
+        startTimer: false
+    )
+    _ = try engine.start(
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
+    automaticLock.isEnabled = false
+    engine.evaluateNow()
+    try runner.expect(automaticLock.isEnabled, "Evaluation must restore the requested assertion")
+    try runner.expect(automaticLock.setValues == [true, true], "Expected the assertion to be recreated")
+}
+
+runner.run("failed stop restores automatic lock assertion") {
+    let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
+    let engine = try GuardEngine(
+        powerController: power,
+        automaticLockController: automaticLock,
+        stateStore: MemoryStateStore(PersistedState()),
+        sensors: FakeSensors(),
+        startTimer: false
+    )
+    _ = try engine.start(
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
+    power.failNextSet = true
+    do {
+        _ = try engine.stop(request: StopRequest())
+        throw TestFailure.failed("Stop should fail when the power write fails")
+    } catch {
+        try runner.expect(power.sleepDisabled, "Failed stop must leave sleep disabled")
+        try runner.expect(automaticLock.isEnabled, "Failed stop must restore automatic lock prevention")
+        try runner.expect(engine.status().session != nil, "Failed stop must preserve the active session")
+        try runner.expect(
+            automaticLock.setValues == [true, false, true],
+            "Expected disable followed by rollback"
+        )
+    }
+}
+
+runner.run("helper recovery restores automatic lock prevention") {
+    let session = GuardSession(
+        profile: .balanced,
+        startedAt: Date(),
+        deadline: nil,
+        batteryThreshold: 20,
+        preventAutomaticLock: true
+    )
+    let automaticLock = FakeAutomaticLockController()
+    let engine = try GuardEngine(
+        powerController: FakePowerController(sleepDisabled: true),
+        automaticLockController: automaticLock,
+        stateStore: MemoryStateStore(PersistedState(session: session)),
+        sensors: FakeSensors(),
+        startTimer: false
+    )
+    try runner.expect(automaticLock.isEnabled, "Recovery must restore automatic lock prevention")
+    try runner.expect(engine.status().automaticLockPreventionActive, "Status must report active assertion")
 }
 
 runner.run("timer stops session") {
     var current = Date(timeIntervalSince1970: 10_000)
     let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: automaticLock,
         stateStore: MemoryStateStore(PersistedState()),
         sensors: FakeSensors(),
         now: { current },
         startTimer: false
     )
     _ = try engine.start(
-        request: SessionRequest(profile: .balanced, deadline: current.addingTimeInterval(60))
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: current.addingTimeInterval(60),
+            preventAutomaticLock: true
+        )
     )
     current = current.addingTimeInterval(61)
     engine.evaluateNow()
     try runner.expect(!power.sleepDisabled, "Timer must restore sleep")
+    try runner.expect(!automaticLock.isEnabled, "Timer must release automatic lock prevention")
     try runner.expect(engine.status().lastStopReason == .timer, "Stop reason must be timer")
 }
 
@@ -249,6 +412,7 @@ runner.run("manual serious warning then critical stop") {
     let power = FakePowerController(sleepDisabled: false)
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: FakeAutomaticLockController(),
         stateStore: MemoryStateStore(PersistedState()),
         sensors: sensors,
         startTimer: false
@@ -267,33 +431,51 @@ runner.run("manual serious warning then critical stop") {
 
 runner.run("external override ends session without reasserting") {
     let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: automaticLock,
         stateStore: MemoryStateStore(PersistedState()),
         sensors: FakeSensors(),
         startTimer: false
     )
-    _ = try engine.start(request: SessionRequest(profile: .balanced, deadline: nil))
+    _ = try engine.start(
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
     power.sleepDisabled = false
     engine.evaluateNow()
     try runner.expect(engine.status().session == nil, "External override must clear session")
     try runner.expect(engine.status().lastStopReason == .externalOverride, "Wrong stop reason")
     try runner.expect(power.setValues == [true], "Engine must not fight external override")
+    try runner.expect(!automaticLock.isEnabled, "External override must release automatic lock prevention")
 }
 
 runner.run("low battery stops balanced session") {
     let sensors = FakeSensors()
     let power = FakePowerController(sleepDisabled: false)
+    let automaticLock = FakeAutomaticLockController()
     let engine = try GuardEngine(
         powerController: power,
+        automaticLockController: automaticLock,
         stateStore: MemoryStateStore(PersistedState()),
         sensors: sensors,
         startTimer: false
     )
-    _ = try engine.start(request: SessionRequest(profile: .balanced, deadline: nil))
+    _ = try engine.start(
+        request: SessionRequest(
+            profile: .balanced,
+            deadline: nil,
+            preventAutomaticLock: true
+        )
+    )
     sensors.battery = BatterySnapshot(percentage: 20, source: .battery, isCharging: false)
     engine.evaluateNow()
     try runner.expect(!power.sleepDisabled, "Low battery must restore sleep")
+    try runner.expect(!automaticLock.isEnabled, "Low battery must release automatic lock prevention")
     try runner.expect(engine.status().lastStopReason == .lowBattery, "Wrong stop reason")
 }
 

@@ -48,7 +48,8 @@ public enum SessionPolicy {
             profile: request.profile,
             startedAt: now,
             deadline: deadline,
-            batteryThreshold: batteryThreshold
+            batteryThreshold: batteryThreshold,
+            preventAutomaticLock: request.preventAutomaticLock
         )
     }
 
@@ -76,6 +77,7 @@ public enum SessionPolicy {
         var updated = session
         updated.deadline = deadline
         updated.batteryThreshold = batteryThreshold
+        updated.preventAutomaticLock = request.preventAutomaticLock
         updated.fiveMinuteWarningSent = false
         return updated
     }

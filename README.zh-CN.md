@@ -9,7 +9,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 16 passing](https://img.shields.io/badge/tests-16%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 22 passing](https://img.shields.io/badge/tests-22%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
 菜单栏 App · 定时、低电量和热状态保护 · CLI · 不创建虚拟显示器 · 不安装 Agent hooks
@@ -27,7 +27,7 @@ macOS 默认会在合盖后进入睡眠，正在运行的 Codex 任务、构建�
 - **合盖运行**：合盖后继续运行 Codex 任务和其他后台工作，并让受支持的远程控制软件保持可用。
 - **正常休眠**：恢复 macOS 默认行为，合盖后正常进入睡眠。
 
-LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获屏幕、阻止显示器休眠或修改其他睡眠设置。
+LidGuard 管理合盖休眠行为，并可在会话期间按需防止自动锁屏。它不会创建虚拟显示器、捕获屏幕或覆盖其他无关睡眠设置。
 
 > [!WARNING]
 > 在保护套、背包或其他密闭空间内运行 MacBook 可能积热。LidGuard 可以响应 macOS 报告的热压力，但无法保证温度或通风一定安全。完全手动且不限时运行需要二次确认。
@@ -47,10 +47,10 @@ LidGuard 只改变合盖休眠行为。它不会创建虚拟显示器、捕获�
 ### 日常使用
 
 1. 点击菜单栏中的 LidGuard 图标。
-2. 选择 **“合盖运行”**，设置保护策略和运行时长，然后点击 **“开始合盖运行”**。
+2. 选择 **“合盖运行”**，设置保护策略和运行时长，按需开启 **“防止自动锁屏”**，然后点击 **“开始合盖运行”**。
 3. 不再需要持续运行时，选择 **“正常休眠”**，恢复 macOS 默认行为。
 
-运行期间可以随时查看剩余时间、电量、供电方式和热状态，也可以调整当前会话的保护策略。
+运行期间可以随时查看剩余时间、电量、供电方式、热状态和自动锁屏保护，也可以调整当前会话的保护策略。
 
 ### 环境
 
@@ -87,7 +87,7 @@ make install
 make dmg
 ```
 
-产物为 `dist/LidGuard-1.0.0-arm64.dmg`，本机测试 DMG 使用临时签名。
+产物为 `dist/LidGuard-1.1.0-arm64.dmg`，本机测试 DMG 使用临时签名。
 
 ## 界面
 
@@ -97,7 +97,7 @@ make dmg
 
 <p align="center"><sub>点击菜单栏中的 LidGuard 图标，即可查看运行模式、设备状态、会话详情、时长和保护策略。</sub></p>
 
-低电量阈值可直接在保护策略面板中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。
+低电量阈值可直接在保护策略面板中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。“防止自动锁屏”是独立的会话选项，默认关闭。
 
 <table>
   <tr>
@@ -123,6 +123,8 @@ make dmg
 | **完全手动** | 预设、自定义或不限时 | 默认关闭，可手动启用 | `serious` 时警告，`critical` 时始终恢复休眠 | 希望直接控制策略的高级用户 |
 
 定时会话最长 7 天；结束前 5 分钟发送通知。低电量保护只在电池供电且未充电时生效。
+
+开启 **“防止自动锁屏”** 后，helper 会保持显示器唤醒，并每 30 秒刷新一次 macOS 用户活跃状态。定时结束、低电量、温度保护、外部覆盖、手动停止或卸载时都会释放这些断言。
 
 ## CLI
 
@@ -165,6 +167,9 @@ lidguard status --json
 # 启动 4 小时的平衡模式会话
 lidguard start --profile balanced --for 4h
 
+# 启动相同会话并防止自动锁屏
+lidguard start --profile balanced --for 4h --prevent-auto-lock
+
 # 启动在指定时间结束的严格模式会话
 lidguard start --profile strict --until 2026-08-10T23:30:00+08:00
 
@@ -173,6 +178,9 @@ lidguard start --profile manual --unlimited --confirm-risk
 
 # 在当前结束时间基础上延长 2 小时
 lidguard extend --for 2h
+
+# 不结束当前会话，仅关闭防自动锁屏
+lidguard extend --unlimited --allow-auto-lock
 
 # 立即恢复正常合盖休眠
 lidguard stop
@@ -189,8 +197,9 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 
 | 目标 | LidGuard 的处理 |
 | --- | --- |
-| 合盖后任务继续执行 | 只切换系统 `SleepDisabled` 状态 |
-| 避免干扰远程桌面输出 | 不创建显示器防休眠断言或虚拟显示器 |
+| 合盖后任务继续执行 | 切换系统 `SleepDisabled` 状态 |
+| 按需防止无人值守时自动锁屏 | 持有原生显示器断言并刷新用户活跃状态 |
+| 避免干扰远程桌面输出 | 不创建虚拟显示器，也不捕获屏幕内容 |
 | App 退出后保护仍生效 | LaunchDaemon helper 持久化会话及其策略 |
 | 不想每次输入管理员密码 | 首次安装 helper 时授权一次，之后使用受限 XPC 接口 |
 | 发生低电量或热压力 | 恢复 `disablesleep=0` 并记录原因 |
@@ -200,8 +209,9 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 
 - Helper 运行于 root，但只暴露一组固定的结构化操作。
 - Helper 校验调用者的 UID 和安装时记录的代码签名要求。
-- App、CLI 和 helper 重启后，会话状态、截止时间和保护策略仍可恢复。
+- App、CLI 和 helper 重启后，会话状态、截止时间、保护策略和防自动锁屏选择仍可恢复。
 - “恢复正常休眠”只执行 `disablesleep=0`，不会覆盖其他 `pmset` 设置。
+- 防自动锁屏默认关闭，其 IOKit 断言会在受管会话停止时一并释放。
 - 外部程序清除 `SleepDisabled` 时，LidGuard 结束当前会话，不会反复重新设置。
 - 外部程序设置 `SleepDisabled` 时，界面会提示当前状态不由 LidGuard 管理。
 - 卸载 helper 前会先恢复正常休眠。
@@ -211,15 +221,15 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 自动测试覆盖策略矩阵、定时解析、低电量、macOS 四级热状态、状态恢复、外部覆盖和 `pmset` 验证失败。测试使用模拟的电源控制器与传感器，不会修改真实系统电源状态。
 
 ```text
-Tests: 16 passed, 0 failed
+Tests: 22 passed, 0 failed
 ```
 
 当前开发机已验证：
 
 - 合盖运行时，vivo 远控保持可见、可操作，本地编程 Agent 继续执行。
 - 正常休眠时，合盖后远控不可操作，macOS 按默认行为进入睡眠。
-- App 退出后，helper 仍能执行定时、低电量和热状态保护。
-- LidGuard 不启动 `caffeinate` 进程，也不创建显示器防休眠断言。
+- App 退出后，helper 仍能执行定时、低电量、热状态和防自动锁屏保护。
+- 开发机已连续一晚验证防自动锁屏生效，期间没有启动 `caffeinate` 进程。
 
 ## 卸载
 
@@ -231,6 +241,7 @@ Tests: 16 passed, 0 failed
 > Apple 没有将 `pmset disablesleep` 作为稳定的公开接口提供文档。每次升级 macOS 后，都应重新验证合盖、唤醒和远程控制行为。
 
 - LidGuard 读取 `ProcessInfo.thermalState` 报告的系统热压力等级，不读取私有 SMC 摄氏温度。
+- 防自动锁屏会保持显示器唤醒并增加耗电；用户主动锁屏及其他安全操作不会被阻止。
 
 ## 项目结构
 
@@ -252,6 +263,7 @@ flowchart LR
     XPC --> Helper["特权 Helper · LaunchDaemon"]
     Helper --> Policy["定时 / 电量 / 热状态策略"]
     Helper --> PM["pmset -a disablesleep 1 / 0"]
+    Helper --> IOKit["可选显示器断言 / 用户活跃刷新"]
     PM --> Verify["读取 pmset -g 验证 SleepDisabled"]
     Verify --> State["持久化会话状态与停止原因"]
 ```
