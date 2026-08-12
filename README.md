@@ -34,16 +34,13 @@ LidGuard changes lid-close sleep behavior and can optionally prevent automatic s
 
 ## Quick Start
 
-### Install the Preview DMG
+### Install
 
-1. Download `LidGuard-1.0.0-preview.1-arm64.dmg` from [GitHub Releases](https://github.com/aermin/LidGuard/releases).
+1. Download [`LidGuard-1.1.0-arm64.dmg`](https://github.com/aermin/LidGuard/releases/download/v1.1.0/LidGuard-1.1.0-arm64.dmg).
 2. Open the DMG and drag **LidGuard** into **Applications**.
-3. Try to open LidGuard from Applications. macOS may block it because the preview uses an ad-hoc signature.
+3. Try to open LidGuard from Applications. macOS may block it because the current build uses an ad-hoc signature.
 4. Open **System Settings → Privacy & Security**, scroll to **Security**, click **Open Anyway**, authenticate, and confirm **Open**.
 5. In LidGuard, click **Install Helper (`安装 Helper`)** and approve the one-time administrator prompt.
-
-> [!NOTE]
-> The currently published `v1.0.0-preview.1` package predates automatic-lock prevention. Build the current `main` branch from source to use this feature until a `1.1.0` package is published.
 
 Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
 

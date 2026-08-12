@@ -34,16 +34,13 @@ LidGuard 管理合盖休眠行为，并可在会话期间按需防止自动锁�
 
 ## 快速开始
 
-### 安装 Preview 预览版
+### 安装
 
-1. 从 [GitHub Releases](https://github.com/aermin/LidGuard/releases) 下载 `LidGuard-1.0.0-preview.1-arm64.dmg`。
+1. 下载 [`LidGuard-1.1.0-arm64.dmg`](https://github.com/aermin/LidGuard/releases/download/v1.1.0/LidGuard-1.1.0-arm64.dmg)。
 2. 打开 DMG，将 **LidGuard** 拖入 **Applications（应用程序）**。
-3. 在“应用程序”中尝试打开 LidGuard。由于预览版使用临时签名，macOS 可能会阻止启动。
+3. 在“应用程序”中尝试打开 LidGuard。由于当前版本使用临时签名，macOS 可能会阻止启动。
 4. 打开 **“系统设置 → 隐私与安全性”**，向下找到“安全性”，点击 **“仍要打开”**，验证身份并再次确认 **“打开”**。
 5. 进入 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
-
-> [!NOTE]
-> 当前已发布的 `v1.0.0-preview.1` 早于防自动锁屏功能。正式发布 `1.1.0` 安装包前，请从当前 `main` 分支构建以使用该功能。
 
 安装 Helper 时会同时安装 LaunchDaemon 和 `lidguard` CLI。完成首次授权后，日常切换“合盖运行 / 正常休眠”不再需要管理员密码。
 
