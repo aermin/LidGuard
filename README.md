@@ -36,7 +36,7 @@ LidGuard changes lid-close sleep behavior and can optionally prevent automatic s
 
 ### Install
 
-1. Download [`LidGuard-1.1.0-arm64.dmg`](https://github.com/aermin/LidGuard/releases/download/v1.1.0/LidGuard-1.1.0-arm64.dmg).
+1. Download the [latest Apple Silicon DMG](https://github.com/aermin/LidGuard/releases/latest/download/LidGuard-arm64.dmg).
 2. Open the DMG and drag **LidGuard** into **Applications**.
 3. Try to open LidGuard from Applications. macOS may block it because the current build uses an ad-hoc signature.
 4. Open **System Settings → Privacy & Security**, scroll to **Security**, click **Open Anyway**, authenticate, and confirm **Open**.

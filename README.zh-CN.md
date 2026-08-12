@@ -36,7 +36,7 @@ LidGuard 管理合盖休眠行为，并可在会话期间按需防止自动锁�
 
 ### 安装
 
-1. 下载 [`LidGuard-1.1.0-arm64.dmg`](https://github.com/aermin/LidGuard/releases/download/v1.1.0/LidGuard-1.1.0-arm64.dmg)。
+1. 下载[最新版 Apple Silicon 安装包](https://github.com/aermin/LidGuard/releases/latest/download/LidGuard-arm64.dmg)。
 2. 打开 DMG，将 **LidGuard** 拖入 **Applications（应用程序）**。
 3. 在“应用程序”中尝试打开 LidGuard。由于当前版本使用临时签名，macOS 可能会阻止启动。
 4. 打开 **“系统设置 → 隐私与安全性”**，向下找到“安全性”，点击 **“仍要打开”**，验证身份并再次确认 **“打开”**。
