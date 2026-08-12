@@ -4,22 +4,60 @@ import SwiftUI
 private struct FeaturePill: View {
     let icon: String
     let title: String
+    var highlighted = false
 
     var body: some View {
         Label(title, systemImage: icon)
             .font(.system(size: 13, weight: .semibold, design: .rounded))
-            .foregroundStyle(Color.white.opacity(0.82))
+            .foregroundStyle(highlighted ? Color(red: 0.25, green: 1.0, blue: 0.5) : Color.white.opacity(0.82))
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
-            .background(Color.white.opacity(0.08), in: Capsule())
+            .background(
+                highlighted ? Color(red: 0.08, green: 0.82, blue: 0.30).opacity(0.14) : Color.white.opacity(0.08),
+                in: Capsule()
+            )
             .overlay {
-                Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1)
+                Capsule().stroke(
+                    highlighted ? Color(red: 0.12, green: 0.9, blue: 0.36).opacity(0.45) : Color.white.opacity(0.12),
+                    lineWidth: 1
+                )
             }
     }
 }
 
+private struct SocialCardCopy {
+    let headline: String
+    let detail: String
+    let timedRecovery: String
+    let preventAutomaticLock: String
+    let lowBattery: String
+    let thermalSafeguards: String
+    let footer: String
+
+    static let english = SocialCardCopy(
+        headline: "Close the lid.\nKeep the work running.",
+        detail: "Run agents, remote access, builds, and downloads\nwith optional automatic-lock prevention.",
+        timedRecovery: "Timed recovery",
+        preventAutomaticLock: "Prevent auto-lock",
+        lowBattery: "Low battery",
+        thermalSafeguards: "Thermal safeguards",
+        footer: "macOS 13+  ·  Apple Silicon  ·  Public preview"
+    )
+
+    static let chinese = SocialCardCopy(
+        headline: "放心合盖。\n任务继续运行。",
+        detail: "Agent、手机远控、构建和下载不中断，\n并可按需防止自动锁屏。",
+        timedRecovery: "定时恢复",
+        preventAutomaticLock: "防止自动锁屏",
+        lowBattery: "低电量保护",
+        thermalSafeguards: "热状态保护",
+        footer: "macOS 13+  ·  Apple Silicon  ·  Public preview"
+    )
+}
+
 private struct SocialCard: View {
     let screenshot: NSImage
+    let copy: SocialCardCopy
 
     var body: some View {
         ZStack {
@@ -52,7 +90,7 @@ private struct SocialCard: View {
 
                     Spacer().frame(height: 52)
 
-                    Text("Close the lid.\nKeep the work running.")
+                    Text(copy.headline)
                         .font(.system(size: 46, weight: .heavy, design: .rounded))
                         .tracking(-1.2)
                         .foregroundStyle(.white)
@@ -60,8 +98,8 @@ private struct SocialCard: View {
 
                     Spacer().frame(height: 24)
 
-                    Text("Run local agents, remote access, builds,\nand downloads after closing the lid.")
-                        .font(.system(size: 20, weight: .medium, design: .rounded))
+                    Text(copy.detail)
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
                         .foregroundStyle(Color.white.opacity(0.68))
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
@@ -69,18 +107,22 @@ private struct SocialCard: View {
                     Spacer().frame(height: 32)
 
                     HStack(spacing: 10) {
-                        FeaturePill(icon: "timer", title: "Timed recovery")
-                        FeaturePill(icon: "battery.25percent", title: "Low battery")
+                        FeaturePill(icon: "timer", title: copy.timedRecovery)
+                        FeaturePill(
+                            icon: "lock.open",
+                            title: copy.preventAutomaticLock,
+                            highlighted: true
+                        )
                     }
                     Spacer().frame(height: 10)
                     HStack(spacing: 10) {
-                        FeaturePill(icon: "thermometer.high", title: "Thermal safeguards")
-                        FeaturePill(icon: "iphone.and.arrow.forward", title: "Remote access")
+                        FeaturePill(icon: "battery.25percent", title: copy.lowBattery)
+                        FeaturePill(icon: "thermometer.high", title: copy.thermalSafeguards)
                     }
 
                     Spacer()
 
-                    Text("macOS 13+  ·  Apple Silicon  ·  Public preview")
+                    Text(copy.footer)
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color.white.opacity(0.42))
                 }
@@ -123,11 +165,19 @@ struct SocialCardRenderer {
     @MainActor
     static func main() throws {
         let root = FileManager.default.currentDirectoryPath
-        let source = "\(root)/docs/assets/lidguard-expanded-en.png"
-        let destination = "\(root)/docs/assets/lidguard-social-card.png"
-        guard let screenshot = NSImage(contentsOfFile: source) else {
+        let englishSource = "\(root)/docs/assets/lidguard-expanded-en.png"
+        let chineseSource = "\(root)/docs/assets/lidguard-expanded.png"
+        guard let englishScreenshot = NSImage(contentsOfFile: englishSource),
+              let chineseScreenshot = NSImage(contentsOfFile: chineseSource) else {
             throw CocoaError(.fileReadNoSuchFile)
         }
-        try render(SocialCard(screenshot: screenshot), to: destination)
+        try render(
+            SocialCard(screenshot: englishScreenshot, copy: .english),
+            to: "\(root)/docs/assets/lidguard-social-card.png"
+        )
+        try render(
+            SocialCard(screenshot: chineseScreenshot, copy: .chinese),
+            to: "\(root)/docs/assets/lidguard-social-card-zh.png"
+        )
     }
 }

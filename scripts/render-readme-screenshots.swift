@@ -341,9 +341,12 @@ private struct ActiveSession: View {
             Text("\(copy.lowBatteryThreshold): \(threshold)%")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Label(copy.preventAutomaticLock, systemImage: "checkmark.circle.fill")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Palette.green)
+            HStack(spacing: 8) {
+                Text(copy.preventAutomaticLock)
+                    .font(.caption.weight(.semibold))
+                Spacer()
+                EnabledSwitchPreview()
+            }
             Text(copy.automaticLockActive)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -351,6 +354,21 @@ private struct ActiveSession: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.green.opacity(dark ? 0.11 : 0.08), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct EnabledSwitchPreview: View {
+    var body: some View {
+        Capsule()
+            .fill(Palette.green)
+            .frame(width: 34, height: 20)
+            .overlay(alignment: .trailing) {
+                Circle()
+                    .fill(.white)
+                    .frame(width: 16, height: 16)
+                    .padding(2)
+                    .shadow(color: .black.opacity(0.18), radius: 1, y: 1)
+            }
     }
 }
 

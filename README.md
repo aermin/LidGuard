@@ -4,7 +4,7 @@
 
 # LidGuard
 
-**Keep your Mac running with the lid closed, so Codex tasks and remote access from your phone can continue.**
+**Close the lid without stopping your work, and optionally prevent unattended automatic locking during the session.**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
@@ -12,7 +12,7 @@
 [![Tests 22 passing](https://img.shields.io/badge/tests-22%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
-Menu bar app · Time, battery, and thermal safeguards · CLI · No virtual display · No agent hooks
+Lid-closed operation · Optional automatic-lock prevention · Time, battery, and thermal safeguards · CLI
 
 </div>
 
@@ -20,9 +20,9 @@ Menu bar app · Time, battery, and thermal safeguards · CLI · No virtual displ
   <img src="docs/assets/lidguard-open-laptop-candid.jpg" alt="A developer carrying a partially open laptop on the street so a coding task can keep running" width="560">
 </p>
 
-<p align="center"><sub>Ever carried your Mac like this just to keep a coding task alive? LidGuard lets you close the lid and keep working under timer, battery, and thermal safeguards.</sub></p>
+<p align="center"><sub>Ever carried your Mac like this just to keep a coding task alive? LidGuard lets you close the lid, keep the work running, and optionally prevent unattended automatic locking.</sub></p>
 
-By default, macOS sleeps when the lid closes, interrupting Codex tasks, builds, downloads, and remote access. LidGuard gives you two clear modes and can automatically restore normal sleep when a timer expires, the battery runs low, or macOS reports serious thermal pressure.
+By default, macOS sleeps when the lid closes, interrupting Codex tasks, builds, downloads, and remote access. Even while the Mac remains awake, an automatic screen lock can interrupt unattended remote access. LidGuard manages both boundaries explicitly: lid-close operation for the session, plus optional automatic-lock prevention when requested.
 
 - **Keep Running with Lid Closed**: keeps Codex tasks and other background work running, while supported remote-control software remains available.
 - **Normal Lid Sleep**: restores the default macOS behavior, so the Mac sleeps when the lid closes.
@@ -41,6 +41,9 @@ LidGuard changes lid-close sleep behavior and can optionally prevent automatic s
 3. Try to open LidGuard from Applications. macOS may block it because the preview uses an ad-hoc signature.
 4. Open **System Settings → Privacy & Security**, scroll to **Security**, click **Open Anyway**, authenticate, and confirm **Open**.
 5. In LidGuard, click **Install Helper (`安装 Helper`)** and approve the one-time administrator prompt.
+
+> [!NOTE]
+> The currently published `v1.0.0-preview.1` package predates automatic-lock prevention. Build the current `main` branch from source to use this feature until a `1.1.0` package is published.
 
 Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
 
@@ -95,9 +98,9 @@ The output is `dist/LidGuard-1.1.0-arm64.dmg`. Local test DMGs use ad-hoc signin
   <img src="docs/assets/lidguard-expanded-en.png" alt="LidGuard menu bar app with the safeguards panel expanded" width="560">
 </p>
 
-<p align="center"><sub>Click the LidGuard menu bar icon to open mode selection, device status, session details, duration, and safeguards.</sub></p>
+<p align="center"><sub>See the current lid-closed session, automatic-lock switch, assertion status, duration, power, battery, and thermal safeguards in one place.</sub></p>
 
-The low-battery threshold can be changed directly in the safeguards panel. Strict uses a fixed 30% threshold, Balanced allows 10%–50%, and Manual exposes the same control when low-battery protection is enabled. Automatic-lock protection is an independent session option and is off by default.
+The low-battery threshold can be changed directly in the safeguards panel. Strict uses a fixed 30% threshold, Balanced allows 10%–50%, and Manual exposes the same control when low-battery protection is enabled. Automatic-lock protection is an independent, opt-in session switch and is off by default.
 
 <table>
   <tr>
@@ -109,7 +112,7 @@ The low-battery threshold can be changed directly in the safeguards panel. Stric
     <td><img src="docs/assets/lidguard-normal-en.png" alt="LidGuard menu bar app in normal lid sleep mode" width="360"></td>
   </tr>
   <tr>
-    <td>Shows the current profile, duration, low-battery threshold, thermal state, and power source.</td>
+    <td>Shows the current profile, duration, low-battery threshold, thermal state, power source, and live automatic-lock protection status.</td>
     <td>Shows a clean idle state and reveals session setup only when requested.</td>
   </tr>
 </table>
@@ -124,7 +127,7 @@ The low-battery threshold can be changed directly in the safeguards panel. Stric
 
 Timed sessions can run for up to 7 days. LidGuard sends a notification 5 minutes before a timed session ends. Low-battery protection applies only while the Mac is running on battery and not charging.
 
-When **Prevent Automatic Lock** is enabled, the helper keeps the display awake and refreshes macOS user activity every 30 seconds. The assertion is released with the same timer, battery, thermal, external-override, stop, and uninstall paths as the lid-closed session.
+When **Prevent Automatic Lock** is enabled, the helper keeps the display awake and refreshes macOS user activity every 30 seconds. The switch can be changed while a session is running. Its assertions are released with the same timer, battery, thermal, external-override, stop, and uninstall paths as the lid-closed session. This option increases power use and does not block explicit user locking or other security actions.
 
 ## CLI
 

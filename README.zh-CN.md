@@ -4,7 +4,7 @@
 
 # LidGuard · 合盖守护
 
-**合盖后让 Mac 继续运行，使 Codex 任务、手机远控等不中断。**
+**放心合盖不中断任务，并可在会话期间按需防止无人值守时自动锁屏。**
 
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
@@ -12,7 +12,7 @@
 [![Tests 22 passing](https://img.shields.io/badge/tests-22%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
-菜单栏 App · 定时、低电量和热状态保护 · CLI · 不创建虚拟显示器 · 不安装 Agent hooks
+合盖持续运行 · 可选防自动锁屏 · 定时、低电量和热状态保护 · CLI
 
 </div>
 
@@ -20,9 +20,9 @@
   <img src="docs/assets/lidguard-open-laptop-candid.jpg" alt="为了让编程任务继续运行，开发者只能在街上端着一台留有缝隙的开盖电脑" width="560">
 </p>
 
-<p align="center"><sub>为了不让任务停掉，你也曾这样端着开盖电脑出门吗？LidGuard 让你放心合盖，并通过定时、低电量和热状态保护避免忘记恢复休眠。</sub></p>
+<p align="center"><sub>为了不让任务停掉，你也曾这样端着开盖电脑出门吗？LidGuard 让你放心合盖、持续运行任务，并可按需防止无人值守时自动锁屏。</sub></p>
 
-macOS 默认会在合盖后进入睡眠，正在运行的 Codex 任务、构建、下载等后台工作，以及手机远控会随之中断。LidGuard 提供两个明确模式，并可在定时结束、低电量或 macOS 报告严重热压力时自动恢复正常休眠。
+macOS 默认会在合盖后进入睡眠，正在运行的 Codex 任务、构建、下载等后台工作，以及手机远控会随之中断。即使 Mac 保持唤醒，自动锁屏也可能中断无人值守的远程访问。LidGuard 分别管理这两个边界：会话期间的合盖运行，以及按需开启的防自动锁屏。
 
 - **合盖运行**：合盖后继续运行 Codex 任务和其他后台工作，并让受支持的远程控制软件保持可用。
 - **正常休眠**：恢复 macOS 默认行为，合盖后正常进入睡眠。
@@ -41,6 +41,9 @@ LidGuard 管理合盖休眠行为，并可在会话期间按需防止自动锁�
 3. 在“应用程序”中尝试打开 LidGuard。由于预览版使用临时签名，macOS 可能会阻止启动。
 4. 打开 **“系统设置 → 隐私与安全性”**，向下找到“安全性”，点击 **“仍要打开”**，验证身份并再次确认 **“打开”**。
 5. 进入 LidGuard，点击 **“安装 Helper”**，并完成一次管理员授权。
+
+> [!NOTE]
+> 当前已发布的 `v1.0.0-preview.1` 早于防自动锁屏功能。正式发布 `1.1.0` 安装包前，请从当前 `main` 分支构建以使用该功能。
 
 安装 Helper 时会同时安装 LaunchDaemon 和 `lidguard` CLI。完成首次授权后，日常切换“合盖运行 / 正常休眠”不再需要管理员密码。
 
@@ -95,9 +98,9 @@ make dmg
   <img src="docs/assets/lidguard-expanded.png" alt="从菜单栏打开并展开保护策略的 LidGuard" width="560">
 </p>
 
-<p align="center"><sub>点击菜单栏中的 LidGuard 图标，即可查看运行模式、设备状态、会话详情、时长和保护策略。</sub></p>
+<p align="center"><sub>在一个界面中查看合盖会话、防自动锁屏开关与断言状态、时长、电量、供电和热状态保护。</sub></p>
 
-低电量阈值可直接在保护策略面板中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。“防止自动锁屏”是独立的会话选项，默认关闭。
+低电量阈值可直接在保护策略面板中调整：严格模式固定为 30%，平衡模式可在 10%–50% 间选择，完全手动模式开启低电量保护后使用同一阈值控件。“防止自动锁屏”是独立的会话开关，需要主动开启，默认关闭。
 
 <table>
   <tr>
@@ -109,7 +112,7 @@ make dmg
     <td><img src="docs/assets/lidguard-normal.png" alt="菜单栏 LidGuard 的正常合盖休眠界面" width="360"></td>
   </tr>
   <tr>
-    <td>显示当前策略、时长、低电量阈值、热状态和供电方式。</td>
+    <td>显示当前策略、时长、低电量阈值、热状态、供电方式和实时防自动锁屏状态。</td>
     <td>保持简洁的待机状态，只在需要时展开会话配置。</td>
   </tr>
 </table>
@@ -124,7 +127,7 @@ make dmg
 
 定时会话最长 7 天；结束前 5 分钟发送通知。低电量保护只在电池供电且未充电时生效。
 
-开启 **“防止自动锁屏”** 后，helper 会保持显示器唤醒，并每 30 秒刷新一次 macOS 用户活跃状态。定时结束、低电量、温度保护、外部覆盖、手动停止或卸载时都会释放这些断言。
+开启 **“防止自动锁屏”** 后，helper 会保持显示器唤醒，并每 30 秒刷新一次 macOS 用户活跃状态。运行期间可随时切换；定时结束、低电量、温度保护、外部覆盖、手动停止或卸载时都会释放相关断言。该选项会增加耗电，也不会阻止用户主动锁屏或其他安全操作。
 
 ## CLI
 
