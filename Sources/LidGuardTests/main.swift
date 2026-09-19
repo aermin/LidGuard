@@ -79,6 +79,19 @@ final class FakeHotspotMonitor: ProcessHotspotMonitoring {
     }
 }
 
+final class BlockingHotspotMonitor: ProcessHotspotMonitoring {
+    let started = DispatchSemaphore(value: 0)
+    let release = DispatchSemaphore(value: 0)
+    var shouldBlock = false
+
+    func evaluate(thermalLevel: ThermalLevel, enabled: Bool, now: Date) -> ProcessHotspot? {
+        guard shouldBlock else { return nil }
+        started.signal()
+        _ = release.wait(timeout: .now() + 5)
+        return nil
+    }
+}
+
 final class TestRunner {
     private(set) var passed = 0
     private(set) var failed = 0
@@ -624,6 +637,29 @@ runner.run("disabled overheat protection resets monitoring") {
     try runner.expect(
         monitor.evaluations.contains(where: { !$0.1 }),
         "Monitor must receive a disabled evaluation"
+    )
+}
+
+runner.run("background hotspot scan does not block status") {
+    let monitor = BlockingHotspotMonitor()
+    let engine = try GuardEngine(
+        powerController: FakePowerController(sleepDisabled: false),
+        automaticLockController: FakeAutomaticLockController(),
+        stateStore: MemoryStateStore(PersistedState(overheatProtectionEnabled: true)),
+        sensors: FakeSensors(),
+        hotspotMonitor: monitor
+    )
+    monitor.shouldBlock = true
+    guard monitor.started.wait(timeout: .now() + 4) == .success else {
+        throw TestFailure.failed("Timed background scan did not start")
+    }
+    defer { monitor.release.signal() }
+
+    let startedAt = Date()
+    _ = engine.status()
+    try runner.expect(
+        Date().timeIntervalSince(startedAt) < 0.5,
+        "Status must not wait for process sampling"
     )
 }
 

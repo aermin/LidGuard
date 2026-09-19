@@ -10,9 +10,11 @@ public final class GuardEngine {
     private let hotspotMonitor: ProcessHotspotMonitoring
     private let now: () -> Date
     private let queue = DispatchQueue(label: "local.huangxiaomin.LidGuard.engine")
+    private let hotspotQueue = DispatchQueue(label: "local.huangxiaomin.LidGuard.hotspot", qos: .utility)
     private let logger = Logger(subsystem: LidGuardConstants.bundleIdentifier, category: "engine")
     private var state: PersistedState
     private var timer: DispatchSourceTimer?
+    private var hotspotEvaluationInProgress = false
 
     public init(
         powerController: PowerControlling,
@@ -49,7 +51,7 @@ public final class GuardEngine {
         if startTimer {
             let timer = DispatchSource.makeTimerSource(queue: queue)
             timer.schedule(deadline: .now() + 2, repeating: 5, leeway: .seconds(1))
-            timer.setEventHandler { [weak self] in self?.evaluate() }
+            timer.setEventHandler { [weak self] in self?.evaluate(scheduleHotspotScan: true) }
             timer.resume()
             self.timer = timer
         }
@@ -138,11 +140,15 @@ public final class GuardEngine {
             )
             state.lastChangedAt = now()
             if !request.enabled {
-                _ = hotspotMonitor.evaluate(
-                    thermalLevel: .nominal,
-                    enabled: false,
-                    now: now()
-                )
+                let evaluationDate = now()
+                hotspotQueue.async { [weak self] in
+                    guard let self else { return }
+                    _ = self.hotspotMonitor.evaluate(
+                        thermalLevel: .nominal,
+                        enabled: false,
+                        now: evaluationDate
+                    )
+                }
             }
             try stateStore.save(state)
             return OperationResult(
@@ -154,7 +160,7 @@ public final class GuardEngine {
     }
 
     public func evaluateNow() {
-        queue.sync { evaluate() }
+        queue.sync { evaluate(scheduleHotspotScan: false) }
     }
 
     private func recoverInitialState(hadStoredState: Bool) throws {
@@ -201,30 +207,24 @@ public final class GuardEngine {
             try? setAutomaticLockPrevention(false)
         }
 
-        evaluate()
+        evaluate(scheduleHotspotScan: false)
     }
 
-    private func evaluate() {
+    private func evaluate(scheduleHotspotScan: Bool) {
         do {
             let thermal = sensors.currentThermalLevel()
-            if let hotspot = hotspotMonitor.evaluate(
-                thermalLevel: thermal,
-                enabled: state.overheatProtectionEnabled,
-                now: now()
-            ) {
-                state.lastTerminatedHotspot = hotspot
-                state.lastEvent = GuardEvent(
-                    kind: .hotspotTerminated,
-                    message: String(
-                        format: "过热保护已结束 %@（PID %d，CPU %.0f%%）",
-                        hotspot.processName,
-                        hotspot.pid,
-                        hotspot.cpuPercent
-                    ),
-                    createdAt: now()
+            if scheduleHotspotScan {
+                scheduleHotspotEvaluation(thermalLevel: thermal)
+            } else {
+                applyHotspot(
+                    hotspotQueue.sync {
+                        hotspotMonitor.evaluate(
+                            thermalLevel: thermal,
+                            enabled: state.overheatProtectionEnabled,
+                            now: now()
+                        )
+                    }
                 )
-                state.lastChangedAt = now()
-                try stateStore.save(state)
             }
 
             let sleepDisabled = try powerController.readSleepDisabled()
@@ -297,6 +297,44 @@ public final class GuardEngine {
         } catch {
             recordError(error)
         }
+    }
+
+    private func scheduleHotspotEvaluation(thermalLevel: ThermalLevel) {
+        guard !hotspotEvaluationInProgress else { return }
+        hotspotEvaluationInProgress = true
+        let enabled = state.overheatProtectionEnabled
+        let evaluationDate = now()
+        hotspotQueue.async { [weak self] in
+            guard let self else { return }
+            let hotspot = self.hotspotMonitor.evaluate(
+                thermalLevel: thermalLevel,
+                enabled: enabled,
+                now: evaluationDate
+            )
+            self.queue.async { [weak self] in
+                guard let self else { return }
+                self.hotspotEvaluationInProgress = false
+                guard !enabled || self.state.overheatProtectionEnabled else { return }
+                self.applyHotspot(hotspot)
+            }
+        }
+    }
+
+    private func applyHotspot(_ hotspot: ProcessHotspot?) {
+        guard let hotspot else { return }
+        state.lastTerminatedHotspot = hotspot
+        state.lastEvent = GuardEvent(
+            kind: .hotspotTerminated,
+            message: String(
+                format: "过热保护已结束 %@（PID %d，CPU %.0f%%）",
+                hotspot.processName,
+                hotspot.pid,
+                hotspot.cpuPercent
+            ),
+            createdAt: now()
+        )
+        state.lastChangedAt = now()
+        try? stateStore.save(state)
     }
 
     private func stopInternal(reason: StopReason) throws {

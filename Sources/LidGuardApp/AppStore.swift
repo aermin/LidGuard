@@ -143,7 +143,9 @@ final class AppStore: ObservableObject {
             processEvent(snapshot.lastEvent)
         } catch {
             helperAuthorizationStatus = InstallerManager.helperAuthorizationStatus
-            errorMessage = helperAuthorizationMessage ?? error.localizedDescription
+            if status == nil || helperAuthorizationStatus != .current {
+                errorMessage = helperAuthorizationMessage ?? error.localizedDescription
+            }
         }
     }
 

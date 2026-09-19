@@ -278,6 +278,7 @@ struct MenuContentView: View {
                 Label("过热保护", systemImage: "flame.fill")
                     .font(.subheadline.weight(.semibold))
             }
+            .toggleStyle(.switch)
             .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
 
             Text(overheatProtectionSummary)
@@ -383,6 +384,7 @@ struct MenuContentView: View {
     private var automaticLockConfigurationToggle: some View {
         VStack(alignment: .leading, spacing: 3) {
             Toggle("防止自动锁屏", isOn: $store.preventAutomaticLock)
+                .toggleStyle(.switch)
             Text("保持显示器唤醒，并定期刷新用户活跃状态；开启后会增加耗电。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -399,6 +401,7 @@ struct MenuContentView: View {
             batteryThresholdStepper
         case .manual:
             Toggle("启用低电量保护", isOn: $store.manualBatteryProtection)
+                .toggleStyle(.switch)
             if store.manualBatteryProtection {
                 batteryThresholdStepper
             }
@@ -439,6 +442,7 @@ struct MenuContentView: View {
                         set: { store.setAutomaticLockPrevention($0) }
                     )
                 )
+                .toggleStyle(.switch)
                 .disabled(store.isWorking || store.helperRepairRequired)
                 Text(automaticLockStatusText)
                     .font(.caption2)
@@ -525,6 +529,7 @@ struct SettingsContentView: View {
                         set: { store.setLaunchAtLogin($0) }
                     )
                 )
+                .toggleStyle(.switch)
                 Stepper(
                     "默认低电量阈值：\(store.balancedBatteryThreshold)%",
                     value: $store.balancedBatteryThreshold,

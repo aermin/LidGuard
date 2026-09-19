@@ -243,7 +243,7 @@ General-purpose keep-awake tools often prevent display sleep, idle sleep, or bot
 Automated tests cover the policy matrix, time parsing, low-battery behavior, all four macOS thermal states, state recovery, external overrides, and `pmset` verification failures. The test suite uses simulated power controllers and sensors, so it does not change the real system power state.
 
 ```text
-Tests: 28 passed, 0 failed
+Tests: 29 passed, 0 failed
 ```
 
 Verified on the development Mac:

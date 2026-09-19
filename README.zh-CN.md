@@ -243,7 +243,7 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 自动测试覆盖策略矩阵、定时解析、低电量、macOS 四级热状态、状态恢复、外部覆盖和 `pmset` 验证失败。测试使用模拟的电源控制器与传感器，不会修改真实系统电源状态。
 
 ```text
-Tests: 28 passed, 0 failed
+Tests: 29 passed, 0 failed
 ```
 
 当前开发机已验证：
