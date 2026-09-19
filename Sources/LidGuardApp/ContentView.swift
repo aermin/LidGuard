@@ -12,6 +12,7 @@ struct MenuContentView: View {
             modeSwitcher
             Divider()
             metrics
+            overheatProtectionCard
 
             if store.status?.mode == .active {
                 activeSession
@@ -114,7 +115,7 @@ struct MenuContentView: View {
             HStack(spacing: 8) {
                 modeButton(
                     title: "合盖运行",
-                    subtitle: "持续远控",
+                    subtitle: "保持后台运行",
                     icon: "laptopcomputer.and.arrow.down",
                     selected: store.status?.mode == .active,
                     tint: .green
@@ -214,11 +215,46 @@ struct MenuContentView: View {
         }
     }
 
+    private var overheatProtectionCard: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Toggle(
+                isOn: Binding(
+                    get: { store.status?.overheatProtectionEnabled ?? false },
+                    set: { store.setOverheatProtection($0) }
+                )
+            ) {
+                Label("过热保护", systemImage: "flame.fill")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
+
+            Text(overheatProtectionSummary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let hotspot = store.status?.lastTerminatedHotspot {
+                Text("最近处理：\(hotspot.processName) · CPU \(Int(hotspot.cpuPercent.rounded()))%")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private var overheatProtectionSummary: String {
+        store.status?.overheatProtectionEnabled == true
+            ? "已开启 · 系统升温后自动识别并处理持续高 CPU 的异常进程"
+            : "已关闭 · 不会自动结束异常进程"
+    }
+
     private var normalSleepSummary: some View {
         VStack(alignment: .leading, spacing: 5) {
             Label("由 macOS 正常管理睡眠", systemImage: "checkmark.shield")
                 .font(.subheadline.weight(.semibold))
-            Text("当前没有合盖运行会话，也没有时长、低电量或温度保护倒计时。")
+            Text("当前没有合盖运行会话；会话时长、低电量和合盖热保护均未运行。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -330,7 +366,7 @@ struct MenuContentView: View {
         if store.durationChoice == .unlimited {
             return "将持续合盖运行，直到你手动恢复正常休眠。"
         }
-        return "到期后自动恢复正常合盖休眠；如果当时仍合盖，vivo 和 Agent 会随系统睡眠断开。"
+        return "到期后自动恢复正常合盖休眠；若当时仍合盖，远程连接和后台任务会随系统睡眠中断。"
     }
 
     private var activeSession: some View {
@@ -445,26 +481,6 @@ struct SettingsContentView: View {
                 )
             }
 
-            Section("过热保护") {
-                Toggle(
-                    "自动结束异常热点",
-                    isOn: Binding(
-                        get: { store.status?.overheatProtectionEnabled ?? false },
-                        set: { store.setOverheatProtection($0) }
-                    )
-                )
-                .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
-                Text("系统进入升温、严重或临界热压力后，持续观察高 CPU 进程，确认异常后请求其正常退出。此功能独立于合盖运行。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if let hotspot = store.status?.lastTerminatedHotspot {
-                    LabeledContent(
-                        "最近处理",
-                        value: "\(hotspot.processName) · CPU \(Int(hotspot.cpuPercent.rounded()))%"
-                    )
-                }
-            }
-
             Section("组件") {
                 LabeledContent("Helper", value: store.helperAuthorizationDisplayName)
                 LabeledContent("CLI", value: FileManager.default.fileExists(atPath: LidGuardConstants.cliPath) ? "已安装" : "未安装")
@@ -492,7 +508,7 @@ struct SettingsContentView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .frame(width: 480, height: 500)
+        .frame(width: 480, height: 390)
         .alert("确认卸载 Helper？", isPresented: $confirmUninstall) {
             Button("取消", role: .cancel) {}
             Button("恢复并卸载", role: .destructive) { store.uninstallHelper() }

@@ -128,7 +128,7 @@ When **Prevent Automatic Lock** is enabled, the helper keeps the display awake a
 
 ## Generic thermal hotspot protection
 
-The **Automatically Terminate CPU Hotspots** setting is an independent, persistent switch; it does not require an active lid-closed session. When enabled, the helper checks macOS thermal pressure and CPU usage for processes owned by the logged-in user every five seconds:
+The first-level **Thermal Hotspot Protection** switch is independent and persistent; it does not require an active lid-closed session. When enabled, the helper checks macOS thermal pressure and CPU usage for processes owned by the logged-in user every five seconds:
 
 - `fair`: at least 80% CPU continuously for 30 seconds.
 - `serious`: at least 50% CPU continuously for 15 seconds.
@@ -243,7 +243,7 @@ Tests: 28 passed, 0 failed
 
 Verified on the development Mac:
 
-- During an active session, vivo remote control remains visible and usable after the lid closes, while coding agents continue running.
+- During an active session, remote access remains available after the lid closes, while local background tasks continue running.
 - In Normal Sleep mode, remote control becomes unusable after the lid closes and macOS follows its default sleep behavior.
 - The helper continues enforcing timers, low-battery safeguards, thermal safeguards, and automatic-lock protection after the app quits.
 - Automatic-lock prevention remained active overnight on the development Mac without starting a `caffeinate` process.

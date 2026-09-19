@@ -25,6 +25,8 @@ private struct Copy {
     let battery: String
     let power: String
     let acPower: String
+    let overheatProtection: String
+    let overheatProtectionEnabled: String
     let balanced: String
     let noTimeLimit: String
     let lowBatteryThreshold: String
@@ -61,6 +63,8 @@ private struct Copy {
         battery: "BATTERY",
         power: "POWER",
         acPower: "AC Power",
+        overheatProtection: "Thermal Hotspot Protection",
+        overheatProtectionEnabled: "On · Detects sustained high-CPU processes when the system heats up",
         balanced: "Balanced",
         noTimeLimit: "No time limit",
         lowBatteryThreshold: "Low-battery threshold",
@@ -79,7 +83,7 @@ private struct Copy {
         thresholdHint: "Adjustable threshold. Serious thermal pressure automatically restores normal sleep.",
         applyChanges: "Apply Changes",
         normalBehavior: "Normal macOS sleep behavior",
-        noActiveSession: "No LidGuard session or safeguards are active.",
+        noActiveSession: "No lid-closed session; timer, battery, and lid thermal safeguards are inactive.",
         setUpMode: "Set Up Lid-Closed Mode"
     )
 
@@ -90,7 +94,7 @@ private struct Copy {
         normalSubtitle: "合盖后由 macOS 正常进入休眠",
         runMode: "运行模式",
         keepRunning: "合盖运行",
-        keepRunningSubtitle: "持续远控",
+        keepRunningSubtitle: "保持后台运行",
         normalSleep: "正常休眠",
         normalSleepSubtitle: "恢复系统默认",
         thermal: "热状态",
@@ -98,6 +102,8 @@ private struct Copy {
         battery: "电量",
         power: "供电",
         acPower: "电源",
+        overheatProtection: "过热保护",
+        overheatProtectionEnabled: "已开启 · 系统升温后自动识别并处理持续高 CPU 的异常进程",
         balanced: "平衡",
         noTimeLimit: "不限时运行",
         lowBatteryThreshold: "低电量保护",
@@ -116,7 +122,7 @@ private struct Copy {
         thresholdHint: "可调整阈值；系统热压力严重时自动恢复正常休眠。",
         applyChanges: "应用修改",
         normalBehavior: "正常 macOS 合盖休眠",
-        noActiveSession: "当前没有 LidGuard 会话或保护策略。",
+        noActiveSession: "当前没有合盖运行会话；会话时长、低电量和合盖热保护均未运行。",
         setUpMode: "设置合盖运行"
     )
 }
@@ -326,6 +332,29 @@ private struct Metrics: View {
     }
 }
 
+private struct OverheatProtectionCard: View {
+    let dark: Bool
+    let copy: Copy
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack {
+                Label(copy.overheatProtection, systemImage: "flame.fill")
+                    .font(.system(size: 12.5, weight: .semibold))
+                Spacer()
+                EnabledSwitchPreview()
+            }
+            Text(copy.overheatProtectionEnabled)
+                .font(.system(size: 10.5))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(dark ? 0.12 : 0.09), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
 private struct ActiveSession: View {
     let threshold: Int
     let dark: Bool
@@ -399,6 +428,7 @@ private struct ActivePanel: View {
             ModeSwitcher(active: true, dark: dark, copy: copy)
             Divider()
             Metrics(battery: 86, dark: dark, copy: copy)
+            OverheatProtectionCard(dark: dark, copy: copy)
             ActiveSession(threshold: threshold, dark: dark, copy: copy)
 
             HStack {
@@ -419,7 +449,7 @@ private struct ActivePanel: View {
             Footer(copy: copy)
         }
         .padding(16)
-        .frame(width: 360, height: expanded ? 683.5 : 439.5, alignment: .topLeading)
+        .frame(width: 360, height: expanded ? 753 : 509, alignment: .topLeading)
         .background(dark ? Palette.darkBackground : Palette.lightBackground)
         .environment(\.colorScheme, dark ? .dark : .light)
     }
@@ -527,6 +557,7 @@ private struct NormalPanel: View {
             ModeSwitcher(active: false, dark: false, copy: copy)
             Divider()
             Metrics(battery: 86, dark: false, copy: copy)
+            OverheatProtectionCard(dark: false, copy: copy)
 
             VStack(alignment: .leading, spacing: 5) {
                 Label(copy.normalBehavior, systemImage: "checkmark.shield")
@@ -555,7 +586,7 @@ private struct NormalPanel: View {
             Footer(copy: copy)
         }
         .padding(16)
-        .frame(width: 360, height: 379.5, alignment: .topLeading)
+        .frame(width: 360, height: 449, alignment: .topLeading)
         .background(Palette.lightBackground)
         .environment(\.colorScheme, .light)
     }
