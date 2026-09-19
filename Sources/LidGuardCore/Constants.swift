@@ -2,7 +2,7 @@ import Foundation
 
 public enum LidGuardConstants {
     public static let protocolVersion = 3
-    public static let helperVersion = "1.2.0"
+    public static let helperVersion = "1.2.3"
     public static let bundleIdentifier = "local.huangxiaomin.LidGuard"
     public static let helperLabel = "local.huangxiaomin.LidGuard.helper"
     public static let machServiceName = helperLabel
