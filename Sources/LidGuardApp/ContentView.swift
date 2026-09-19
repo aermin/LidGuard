@@ -8,83 +8,76 @@ struct MenuContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            statusHeader
-            modeSwitcher
-            Divider()
-            metrics
-            overheatProtectionCard
-
-            if store.status?.mode == .active {
-                activeSession
-                Button {
-                    if !isEditingProtection {
-                        store.prepareCurrentSessionForEditing()
-                    }
-                    isEditingProtection.toggle()
-                } label: {
-                    HStack {
-                        Label("调整保护策略", systemImage: "slider.horizontal.3")
-                        Spacer()
-                        Image(systemName: isEditingProtection ? "chevron.up" : "chevron.down")
-                    }
-                }
-                .buttonStyle(.bordered)
-
-                if isEditingProtection {
-                    sessionControls(
-                        sectionTitle: "当前合盖运行设置",
-                        guidance: "修改后会立即应用到当前会话。",
-                        includeAutomaticLockToggle: false,
-                        actionTitle: "应用保护策略"
-                    ) {
-                        store.applySelectedSession()
-                    }
-                }
+            if store.helperRecoveryRequired {
+                helperRecoveryView
             } else {
-                normalSleepSummary
+                statusHeader
+                modeSwitcher
+                Divider()
+                metrics
+                overheatProtectionCard
 
-                Button {
-                    isConfiguringRun.toggle()
-                } label: {
-                    HStack {
-                        Label(
-                            isConfiguringRun ? "收起合盖运行设置" : "配置并开启合盖运行",
-                            systemImage: "laptopcomputer.and.arrow.down"
-                        )
-                        Spacer()
-                        Image(systemName: isConfiguringRun ? "chevron.up" : "chevron.down")
+                if store.status?.mode == .active {
+                    activeSession
+                    Button {
+                        if !isEditingProtection {
+                            store.prepareCurrentSessionForEditing()
+                        }
+                        isEditingProtection.toggle()
+                    } label: {
+                        HStack {
+                            Label("调整保护策略", systemImage: "slider.horizontal.3")
+                            Spacer()
+                            Image(systemName: isEditingProtection ? "chevron.up" : "chevron.down")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+
+                    if isEditingProtection {
+                        sessionControls(
+                            sectionTitle: "当前合盖运行设置",
+                            guidance: "修改后会立即应用到当前会话。",
+                            includeAutomaticLockToggle: false,
+                            actionTitle: "应用保护策略"
+                        ) {
+                            store.applySelectedSession()
+                        }
+                    }
+                } else {
+                    normalSleepSummary
+
+                    Button {
+                        isConfiguringRun.toggle()
+                    } label: {
+                        HStack {
+                            Label(
+                                isConfiguringRun ? "收起合盖运行设置" : "配置并开启合盖运行",
+                                systemImage: "laptopcomputer.and.arrow.down"
+                            )
+                            Spacer()
+                            Image(systemName: isConfiguringRun ? "chevron.up" : "chevron.down")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    if isConfiguringRun {
+                        sessionControls(
+                            sectionTitle: "合盖运行设置",
+                            guidance: "选择保护策略和运行时长，确认后才会开启合盖运行。",
+                            includeAutomaticLockToggle: true,
+                            actionTitle: "开始合盖运行"
+                        ) {
+                            store.startSelectedSession()
+                        }
                     }
                 }
-                .buttonStyle(.borderedProminent)
 
-                if isConfiguringRun {
-                    sessionControls(
-                        sectionTitle: "合盖运行设置",
-                        guidance: "选择保护策略和运行时长，确认后才会开启合盖运行。",
-                        includeAutomaticLockToggle: true,
-                        actionTitle: "开始合盖运行"
-                    ) {
-                        store.startSelectedSession()
-                    }
+                if let error = store.errorMessage, !error.isEmpty {
+                    Label(error, systemImage: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-            }
-
-            if let error = store.errorMessage, !error.isEmpty {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            if store.helperRepairRequired {
-                Button {
-                    store.repairHelper()
-                } label: {
-                    Label(store.helperRepairActionTitle, systemImage: "wrench.and.screwdriver")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(store.isWorking)
             }
 
             Divider()
@@ -104,6 +97,65 @@ struct MenuContentView: View {
             Button("确认开启", role: .destructive) { store.confirmManualUnlimited() }
         } message: {
             Text("密闭保护套或包内运行可能积热。严重热状态只警告，临界热状态仍会强制恢复休眠。")
+        }
+    }
+
+    private var helperRecoveryView: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label("需要修复 Helper", systemImage: "wrench.and.screwdriver.fill")
+                .font(.headline)
+
+            Text(helperRecoveryMessage)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                store.repairHelper()
+            } label: {
+                HStack {
+                    if store.isWorking {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "wrench.and.screwdriver")
+                    }
+                    Text(store.isWorking ? "正在修复…" : "一键修复并恢复连接")
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(store.isWorking)
+
+            Text("需要输入一次管理员密码。修复完成后会自动刷新，无需重启。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let error = store.errorMessage, !error.isEmpty {
+                Label(error, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var helperRecoveryMessage: String {
+        switch store.helperAuthorizationStatus {
+        case .missing:
+            return "合盖运行和过热保护需要安装辅助组件。"
+        case .outdated:
+            return "App 已更新，需要同步更新 Helper 的授权后才能继续使用。"
+        case .unknown:
+            return "无法验证 Helper 的授权状态，重新安装即可恢复。"
+        case .current:
+            return "未能与 Helper 建立通信，重新安装并同步授权即可恢复。"
         }
     }
 

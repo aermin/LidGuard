@@ -38,11 +38,16 @@ LidGuard changes lid-close sleep behavior and can optionally prevent automatic s
 
 1. Download the [latest Apple Silicon DMG](https://github.com/aermin/LidGuard/releases/latest/download/LidGuard-arm64.dmg).
 2. Open the DMG and drag **LidGuard** into **Applications**.
-3. Try to open LidGuard from Applications. macOS may block it because the current build uses an ad-hoc signature.
-4. Open **System Settings → Privacy & Security**, scroll to **Security**, click **Open Anyway**, authenticate, and confirm **Open**.
-5. In LidGuard, click **Install Helper (`安装 Helper`)** and approve the one-time administrator prompt.
+3. Open LidGuard from Applications. Because the current package uses an ad-hoc signature and is not Apple-notarized, macOS may show **“LidGuard Not Opened”** with **Done / Move to Bin**. Click **Done**; do not move the app to the Bin.
+4. Open **System Settings → Privacy & Security**, scroll to **Security**, find the message that LidGuard was blocked, and click **Open Anyway**.
+5. Authenticate and click **Open** in the new confirmation dialog. This bypass is required only once for the current build.
+6. In LidGuard, click **Install Helper (`安装 Helper`)** and approve the one-time administrator prompt.
+
+> [!IMPORTANT]
+> Use **Open Anyway** only after downloading LidGuard from this repository's Release page and confirming that you trust the source. If the button is missing, try opening LidGuard from Applications once more, then return immediately to Privacy & Security.
 
 Installing the helper also installs the LaunchDaemon and the `lidguard` CLI. After this initial authorization, switching between Keep Running and Normal Sleep does not require an administrator password.
+After replacing an ad-hoc signed build, if the first-level panel says the helper needs repair, click **Repair and Reconnect**, then approve the administrator prompt once. The panel refreshes automatically when repair completes.
 
 ### Daily Use
 
@@ -87,7 +92,7 @@ To create a local test DMG:
 make dmg
 ```
 
-The output is `dist/LidGuard-1.2.2-arm64.dmg`. Local test DMGs use ad-hoc signing.
+The output is `dist/LidGuard-1.2.3-arm64.dmg`. Local test DMGs use ad-hoc signing.
 
 ## Interface
 

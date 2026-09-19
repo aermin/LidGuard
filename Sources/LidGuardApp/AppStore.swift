@@ -78,7 +78,11 @@ final class AppStore: ObservableObject {
     }
 
     var helperRepairRequired: Bool {
-        helperAuthorizationStatus == .missing || helperAuthorizationStatus == .outdated
+        helperAuthorizationStatus != .current
+    }
+
+    var helperRecoveryRequired: Bool {
+        helperRepairRequired || (status == nil && errorMessage != nil)
     }
 
     var helperRepairActionTitle: String {
@@ -326,12 +330,14 @@ final class AppStore: ObservableObject {
 
     private var helperAuthorizationMessage: String? {
         switch helperAuthorizationStatus {
-        case .current, .unknown:
+        case .current:
             return nil
         case .missing:
             return "Helper 未安装，请先安装 Helper 与 CLI。"
         case .outdated:
             return "App 已更新，需要重新授权 Helper 后才能通信。"
+        case .unknown:
+            return "无法验证 Helper 授权，请修复 Helper 与 CLI 后重试。"
         }
     }
 }
