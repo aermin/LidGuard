@@ -87,7 +87,7 @@ To create a local test DMG:
 make dmg
 ```
 
-The output is `dist/LidGuard-1.2.1-arm64.dmg`. Local test DMGs use ad-hoc signing.
+The output is `dist/LidGuard-1.2.2-arm64.dmg`. Local test DMGs use ad-hoc signing.
 
 ## Interface
 

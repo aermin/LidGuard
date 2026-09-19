@@ -87,7 +87,7 @@ make install
 make dmg
 ```
 
-产物为 `dist/LidGuard-1.2.1-arm64.dmg`，本机测试 DMG 使用临时签名。
+产物为 `dist/LidGuard-1.2.2-arm64.dmg`，本机测试 DMG 使用临时签名。
 
 ## 界面
 

@@ -23,6 +23,7 @@ BIN_DIRECTORY="$(/usr/bin/swift build -c "$CONFIGURATION" --show-bin-path)"
     "$APP_BUNDLE/Contents/Library/LaunchDaemons"
 
 /usr/bin/ditto "$ROOT/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
+/usr/bin/ditto "$ROOT/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 /usr/bin/ditto "$BIN_DIRECTORY/LidGuardApp" "$APP_BUNDLE/Contents/MacOS/LidGuardApp"
 /usr/bin/ditto "$BIN_DIRECTORY/lidguard" "$APP_BUNDLE/Contents/MacOS/lidguard"
 /usr/bin/ditto "$BIN_DIRECTORY/LidGuardHelper" "$APP_BUNDLE/Contents/Library/HelperTools/local.huangxiaomin.LidGuard.helper"
