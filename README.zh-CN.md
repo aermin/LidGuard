@@ -9,10 +9,10 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 22 passing](https://img.shields.io/badge/tests-22%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 28 passing](https://img.shields.io/badge/tests-28%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
-合盖持续运行 · 可选防自动锁屏 · 定时、低电量和热状态保护 · CLI
+合盖持续运行 · 可选防自动锁屏 · 通用过热热点保护 · CLI
 
 </div>
 
@@ -87,7 +87,7 @@ make install
 make dmg
 ```
 
-产物为 `dist/LidGuard-1.1.0-arm64.dmg`，本机测试 DMG 使用临时签名。
+产物为 `dist/LidGuard-1.2.0-arm64.dmg`，本机测试 DMG 使用临时签名。
 
 ## 界面
 
@@ -125,6 +125,23 @@ make dmg
 定时会话最长 7 天；结束前 5 分钟发送通知。低电量保护只在电池供电且未充电时生效。
 
 开启 **“防止自动锁屏”** 后，helper 会保持显示器唤醒，并每 30 秒刷新一次 macOS 用户活跃状态。运行期间可随时切换；定时结束、低电量、温度保护、外部覆盖、手动停止或卸载时都会释放相关断言。该选项会增加耗电，也不会阻止用户主动锁屏或其他安全操作。
+
+## 通用过热保护
+
+设置中的“自动结束异常热点”是独立常驻开关，不要求正在进行合盖运行会话。开启后，Helper 每 5 秒读取 macOS 热压力与当前登录用户的进程 CPU 占用：
+
+- `fair`（升温）：CPU 持续达到 80% 满 30 秒。
+- `serious`（严重）：CPU 持续达到 50% 满 15 秒。
+- `critical`（临界）：CPU 持续达到 50% 满 5 秒。
+
+确认热点后，LidGuard 先复核进程 PID、启动时间、所属用户和实时 CPU，再发送 `SIGTERM` 请求目标正常退出。它不按应用名称写死规则，因此可以覆盖 `ReportCrash`、远程控制服务、浏览器页面等不同异常；LidGuard 自身、其他用户和 root 系统进程不会被选中。每次处理后至少等待 30 秒再处理下一个热点，并在界面和通知中记录结果。此功能默认关闭。
+
+CLI 也可切换：
+
+```bash
+lidguard overheat-protection --enable
+lidguard overheat-protection --disable
+```
 
 ## CLI
 
@@ -221,7 +238,7 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 自动测试覆盖策略矩阵、定时解析、低电量、macOS 四级热状态、状态恢复、外部覆盖和 `pmset` 验证失败。测试使用模拟的电源控制器与传感器，不会修改真实系统电源状态。
 
 ```text
-Tests: 22 passed, 0 failed
+Tests: 28 passed, 0 failed
 ```
 
 当前开发机已验证：

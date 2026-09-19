@@ -6,6 +6,7 @@ public protocol LidGuardHelperProtocol: NSObjectProtocol {
     func startSession(_ request: NSData, withReply reply: @escaping (NSData?, NSString?) -> Void)
     func updateSession(_ request: NSData, withReply reply: @escaping (NSData?, NSString?) -> Void)
     func stopSession(_ request: NSData, withReply reply: @escaping (NSData?, NSString?) -> Void)
+    func setOverheatProtection(_ request: NSData, withReply reply: @escaping (NSData?, NSString?) -> Void)
 }
 
 public enum HelperClientError: Error, LocalizedError {

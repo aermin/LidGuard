@@ -7,6 +7,7 @@ public final class GuardEngine {
     private let automaticLockController: AutomaticLockControlling
     private let stateStore: StateStoring
     private let sensors: SensorReading
+    private let hotspotMonitor: ProcessHotspotMonitoring
     private let now: () -> Date
     private let queue = DispatchQueue(label: "local.huangxiaomin.LidGuard.engine")
     private let logger = Logger(subsystem: LidGuardConstants.bundleIdentifier, category: "engine")
@@ -18,6 +19,7 @@ public final class GuardEngine {
         automaticLockController: AutomaticLockControlling,
         stateStore: StateStoring,
         sensors: SensorReading,
+        hotspotMonitor: ProcessHotspotMonitoring = NoopProcessHotspotMonitor(),
         now: @escaping () -> Date = Date.init,
         startTimer: Bool = true
     ) throws {
@@ -25,6 +27,7 @@ public final class GuardEngine {
         self.automaticLockController = automaticLockController
         self.stateStore = stateStore
         self.sensors = sensors
+        self.hotspotMonitor = hotspotMonitor
         self.now = now
 
         let hadStoredState = stateStore.hasStoredState
@@ -121,6 +124,35 @@ public final class GuardEngine {
         }
     }
 
+    public func setOverheatProtection(request: OverheatProtectionRequest) throws -> OperationResult {
+        try queue.sync {
+            guard request.protocolVersion == LidGuardConstants.protocolVersion else {
+                throw PolicyError.incompatibleProtocol
+            }
+            state.overheatProtectionEnabled = request.enabled
+            state.lastError = nil
+            state.lastEvent = GuardEvent(
+                kind: .thermalWarning,
+                message: request.enabled ? "过热保护已开启" : "过热保护已关闭",
+                createdAt: now()
+            )
+            state.lastChangedAt = now()
+            if !request.enabled {
+                _ = hotspotMonitor.evaluate(
+                    thermalLevel: .nominal,
+                    enabled: false,
+                    now: now()
+                )
+            }
+            try stateStore.save(state)
+            return OperationResult(
+                success: true,
+                message: request.enabled ? "过热保护已开启" : "过热保护已关闭",
+                status: makeStatus()
+            )
+        }
+    }
+
     public func evaluateNow() {
         queue.sync { evaluate() }
     }
@@ -174,6 +206,27 @@ public final class GuardEngine {
 
     private func evaluate() {
         do {
+            let thermal = sensors.currentThermalLevel()
+            if let hotspot = hotspotMonitor.evaluate(
+                thermalLevel: thermal,
+                enabled: state.overheatProtectionEnabled,
+                now: now()
+            ) {
+                state.lastTerminatedHotspot = hotspot
+                state.lastEvent = GuardEvent(
+                    kind: .hotspotTerminated,
+                    message: String(
+                        format: "过热保护已结束 %@（PID %d，CPU %.0f%%）",
+                        hotspot.processName,
+                        hotspot.pid,
+                        hotspot.cpuPercent
+                    ),
+                    createdAt: now()
+                )
+                state.lastChangedAt = now()
+                try stateStore.save(state)
+            }
+
             let sleepDisabled = try powerController.readSleepDisabled()
 
             guard var session = state.session else {
@@ -196,7 +249,6 @@ public final class GuardEngine {
                 return
             }
 
-            let thermal = sensors.currentThermalLevel()
             let battery = sensors.currentBattery()
             if let reason = SessionPolicy.stopReason(
                 session: session,
@@ -314,12 +366,14 @@ public final class GuardEngine {
             mode: mode,
             sleepDisabled: sleepDisabled,
             automaticLockPreventionActive: automaticLockController.isEnabled,
+            overheatProtectionEnabled: state.overheatProtectionEnabled,
             session: state.session,
             thermalLevel: sensors.currentThermalLevel(),
             battery: sensors.currentBattery(),
             lastStopReason: state.lastStopReason,
             lastError: state.lastError,
             lastEvent: state.lastEvent,
+            lastTerminatedHotspot: state.lastTerminatedHotspot,
             observedAt: now()
         )
     }

@@ -9,10 +9,10 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 22 passing](https://img.shields.io/badge/tests-22%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 28 passing](https://img.shields.io/badge/tests-28%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
-Lid-closed operation · Optional automatic-lock prevention · Time, battery, and thermal safeguards · CLI
+Lid-closed operation · Optional automatic-lock prevention · Generic thermal hotspot protection · CLI
 
 </div>
 
@@ -87,7 +87,7 @@ To create a local test DMG:
 make dmg
 ```
 
-The output is `dist/LidGuard-1.1.0-arm64.dmg`. Local test DMGs use ad-hoc signing.
+The output is `dist/LidGuard-1.2.0-arm64.dmg`. Local test DMGs use ad-hoc signing.
 
 ## Interface
 
@@ -125,6 +125,23 @@ The low-battery threshold can be changed directly in the safeguards panel. Stric
 Timed sessions can run for up to 7 days. LidGuard sends a notification 5 minutes before a timed session ends. Low-battery protection applies only while the Mac is running on battery and not charging.
 
 When **Prevent Automatic Lock** is enabled, the helper keeps the display awake and refreshes macOS user activity every 30 seconds. The switch can be changed while a session is running. Its assertions are released with the same timer, battery, thermal, external-override, stop, and uninstall paths as the lid-closed session. This option increases power use and does not block explicit user locking or other security actions.
+
+## Generic thermal hotspot protection
+
+The **Automatically Terminate CPU Hotspots** setting is an independent, persistent switch; it does not require an active lid-closed session. When enabled, the helper checks macOS thermal pressure and CPU usage for processes owned by the logged-in user every five seconds:
+
+- `fair`: at least 80% CPU continuously for 30 seconds.
+- `serious`: at least 50% CPU continuously for 15 seconds.
+- `critical`: at least 50% CPU continuously for 5 seconds.
+
+Before acting, LidGuard rechecks the PID, process start time, owner, and current CPU usage, then sends `SIGTERM` so the process can exit cleanly. The rule is process-name agnostic, so it covers stuck crash reporters, remote-control services, browser renderers, and similar hotspots. LidGuard itself, root processes, and processes owned by other users are excluded. A 30-second cooldown follows each action, and the result is recorded in the UI and notification history. The switch is off by default.
+
+The CLI can also change it:
+
+```bash
+lidguard overheat-protection --enable
+lidguard overheat-protection --disable
+```
 
 ## CLI
 
@@ -221,7 +238,7 @@ General-purpose keep-awake tools often prevent display sleep, idle sleep, or bot
 Automated tests cover the policy matrix, time parsing, low-battery behavior, all four macOS thermal states, state recovery, external overrides, and `pmset` verification failures. The test suite uses simulated power controllers and sensors, so it does not change the real system power state.
 
 ```text
-Tests: 22 passed, 0 failed
+Tests: 28 passed, 0 failed
 ```
 
 Verified on the development Mac:

@@ -445,6 +445,26 @@ struct SettingsContentView: View {
                 )
             }
 
+            Section("过热保护") {
+                Toggle(
+                    "自动结束异常热点",
+                    isOn: Binding(
+                        get: { store.status?.overheatProtectionEnabled ?? false },
+                        set: { store.setOverheatProtection($0) }
+                    )
+                )
+                .disabled(store.isWorking || store.helperRepairRequired || store.status == nil)
+                Text("系统进入升温、严重或临界热压力后，持续观察高 CPU 进程，确认异常后请求其正常退出。此功能独立于合盖运行。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if let hotspot = store.status?.lastTerminatedHotspot {
+                    LabeledContent(
+                        "最近处理",
+                        value: "\(hotspot.processName) · CPU \(Int(hotspot.cpuPercent.rounded()))%"
+                    )
+                }
+            }
+
             Section("组件") {
                 LabeledContent("Helper", value: store.helperAuthorizationDisplayName)
                 LabeledContent("CLI", value: FileManager.default.fileExists(atPath: LidGuardConstants.cliPath) ? "已安装" : "未安装")
@@ -461,6 +481,10 @@ struct SettingsContentView: View {
                     "防自动锁屏断言",
                     value: store.status?.automaticLockPreventionActive == true ? "生效" : "未启用"
                 )
+                LabeledContent(
+                    "过热保护",
+                    value: store.status?.overheatProtectionEnabled == true ? "已开启" : "已关闭"
+                )
                 if let error = store.errorMessage {
                     Text(error).foregroundStyle(.red)
                 }
@@ -468,7 +492,7 @@ struct SettingsContentView: View {
         }
         .formStyle(.grouped)
         .padding()
-        .frame(width: 480, height: 390)
+        .frame(width: 480, height: 500)
         .alert("确认卸载 Helper？", isPresented: $confirmUninstall) {
             Button("取消", role: .cancel) {}
             Button("恢复并卸载", role: .destructive) { store.uninstallHelper() }

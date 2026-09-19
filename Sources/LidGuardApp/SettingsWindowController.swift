@@ -20,7 +20,7 @@ final class SettingsWindowController {
             let newWindow = NSWindow(contentViewController: hostingController)
             newWindow.title = "合盖守护设置"
             newWindow.styleMask = [.titled, .closable, .miniaturizable]
-            newWindow.setContentSize(NSSize(width: 480, height: 390))
+            newWindow.setContentSize(NSSize(width: 480, height: 500))
             newWindow.isReleasedWhenClosed = false
             newWindow.collectionBehavior = [.moveToActiveSpace]
             newWindow.center()

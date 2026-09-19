@@ -67,6 +67,18 @@ final class FakeSensors: SensorReading {
     func currentThermalLevel() -> ThermalLevel { thermal }
 }
 
+final class FakeHotspotMonitor: ProcessHotspotMonitoring {
+    var evaluations: [(ThermalLevel, Bool)] = []
+    var nextHotspot: ProcessHotspot?
+
+    func evaluate(thermalLevel: ThermalLevel, enabled: Bool, now: Date) -> ProcessHotspot? {
+        evaluations.append((thermalLevel, enabled))
+        guard enabled else { return nil }
+        defer { nextHotspot = nil }
+        return nextHotspot
+    }
+}
+
 final class TestRunner {
     private(set) var passed = 0
     private(set) var failed = 0
@@ -165,6 +177,93 @@ runner.run("legacy session defaults automatic lock prevention off") {
     let legacyData = try JSONSerialization.data(withJSONObject: json)
     let decoded = try LidGuardCoding.makeDecoder().decode(GuardSession.self, from: legacyData)
     try runner.expect(!decoded.preventAutomaticLock, "Legacy sessions must default to disabled")
+}
+
+runner.run("legacy state defaults overheat protection off") {
+    let original = PersistedState(overheatProtectionEnabled: true)
+    let encoded = try LidGuardCoding.makeEncoder().encode(original)
+    var json = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] ?? [:]
+    json.removeValue(forKey: "overheatProtectionEnabled")
+    json.removeValue(forKey: "lastTerminatedHotspot")
+    let legacyData = try JSONSerialization.data(withJSONObject: json)
+    let decoded = try LidGuardCoding.makeDecoder().decode(PersistedState.self, from: legacyData)
+    try runner.expect(!decoded.overheatProtectionEnabled, "Legacy state must default to disabled")
+    try runner.expect(decoded.lastTerminatedHotspot == nil, "Legacy state must not invent a hotspot")
+}
+
+runner.run("hotspot detector requires sustained fair CPU") {
+    let detector = HotspotDetector()
+    let start = Date(timeIntervalSince1970: 1_000)
+    let sample = ProcessSample(
+        pid: 42,
+        uid: 501,
+        cpuPercent: 92,
+        startIdentity: "Mon Sep 14 11:00:57 2026",
+        command: "/System/Library/CoreServices/ReportCrash"
+    )
+    try runner.expect(
+        detector.candidate(
+            from: [sample], ownerUID: 501, thermalLevel: .fair, now: start
+        ) == nil,
+        "Fair pressure must not act on the first sample"
+    )
+    try runner.expect(
+        detector.candidate(
+            from: [sample],
+            ownerUID: 501,
+            thermalLevel: .fair,
+            now: start.addingTimeInterval(25)
+        ) == nil,
+        "Fair pressure must wait for 30 seconds"
+    )
+    let candidate = detector.candidate(
+        from: [sample],
+        ownerUID: 501,
+        thermalLevel: .fair,
+        now: start.addingTimeInterval(30)
+    )
+    try runner.expect(candidate == sample, "Sustained ReportCrash-style load must be detected generically")
+}
+
+runner.run("hotspot detector uses tighter serious threshold") {
+    let detector = HotspotDetector()
+    let start = Date(timeIntervalSince1970: 2_000)
+    let sample = ProcessSample(
+        pid: 84,
+        uid: 501,
+        cpuPercent: 55,
+        startIdentity: "Tue Sep 15 11:00:57 2026",
+        command: "/Applications/Example.app/Contents/MacOS/Example"
+    )
+    _ = detector.candidate(from: [sample], ownerUID: 501, thermalLevel: .serious, now: start)
+    let candidate = detector.candidate(
+        from: [sample],
+        ownerUID: 501,
+        thermalLevel: .serious,
+        now: start.addingTimeInterval(15)
+    )
+    try runner.expect(candidate == sample, "Serious pressure must detect sustained 50% CPU load")
+}
+
+runner.run("hotspot detector protects LidGuard and other users") {
+    let detector = HotspotDetector()
+    let start = Date(timeIntervalSince1970: 3_000)
+    let samples = [
+        ProcessSample(
+            pid: 20, uid: 0, cpuPercent: 100, startIdentity: "root", command: "/usr/libexec/root-task"
+        ),
+        ProcessSample(
+            pid: 21, uid: 501, cpuPercent: 100, startIdentity: "self", command: "/Applications/LidGuard.app/Contents/MacOS/LidGuardHelper"
+        ),
+    ]
+    _ = detector.candidate(from: samples, ownerUID: 501, thermalLevel: .critical, now: start)
+    let candidate = detector.candidate(
+        from: samples,
+        ownerUID: 501,
+        thermalLevel: .critical,
+        now: start.addingTimeInterval(5)
+    )
+    try runner.expect(candidate == nil, "Protected and non-owner processes must never be selected")
 }
 
 runner.run("manual accepts enabled battery threshold") {
@@ -477,6 +576,55 @@ runner.run("low battery stops balanced session") {
     try runner.expect(!power.sleepDisabled, "Low battery must restore sleep")
     try runner.expect(!automaticLock.isEnabled, "Low battery must release automatic lock prevention")
     try runner.expect(engine.status().lastStopReason == .lowBattery, "Wrong stop reason")
+}
+
+runner.run("overheat protection runs without a lid session") {
+    let sensors = FakeSensors()
+    sensors.thermal = .fair
+    let monitor = FakeHotspotMonitor()
+    monitor.nextHotspot = ProcessHotspot(
+        pid: 55537,
+        processName: "ReportCrash",
+        cpuPercent: 95,
+        thermalLevel: .fair
+    )
+    let store = MemoryStateStore(PersistedState())
+    let engine = try GuardEngine(
+        powerController: FakePowerController(sleepDisabled: false),
+        automaticLockController: FakeAutomaticLockController(),
+        stateStore: store,
+        sensors: sensors,
+        hotspotMonitor: monitor,
+        startTimer: false
+    )
+    _ = try engine.setOverheatProtection(request: OverheatProtectionRequest(enabled: true))
+    engine.evaluateNow()
+    let status = engine.status()
+    try runner.expect(status.mode == .normal, "Protection must not require a lid session")
+    try runner.expect(status.overheatProtectionEnabled, "Protection switch must persist")
+    try runner.expect(status.lastTerminatedHotspot?.processName == "ReportCrash", "Hotspot must be recorded")
+    try runner.expect(status.lastEvent?.kind == .hotspotTerminated, "Termination event must be published")
+}
+
+runner.run("disabled overheat protection resets monitoring") {
+    let sensors = FakeSensors()
+    sensors.thermal = .serious
+    let monitor = FakeHotspotMonitor()
+    let engine = try GuardEngine(
+        powerController: FakePowerController(sleepDisabled: false),
+        automaticLockController: FakeAutomaticLockController(),
+        stateStore: MemoryStateStore(PersistedState(overheatProtectionEnabled: true)),
+        sensors: sensors,
+        hotspotMonitor: monitor,
+        startTimer: false
+    )
+    _ = try engine.setOverheatProtection(request: OverheatProtectionRequest(enabled: false))
+    engine.evaluateNow()
+    try runner.expect(engine.status().overheatProtectionEnabled == false, "Switch must be disabled")
+    try runner.expect(
+        monitor.evaluations.contains(where: { !$0.1 }),
+        "Monitor must receive a disabled evaluation"
+    )
 }
 
 print("\nTests: \(runner.passed) passed, \(runner.failed) failed")

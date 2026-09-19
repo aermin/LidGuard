@@ -20,7 +20,8 @@ do {
         powerController: PMSetPowerController(),
         automaticLockController: IOKitAutomaticLockController(),
         stateStore: JSONStateStore(),
-        sensors: SystemSensors()
+        sensors: SystemSensors(),
+        hotspotMonitor: SystemProcessHotspotMonitor(ownerUID: security.ownerUID)
     )
     let service = HelperService(engine: engine)
     let delegate = HelperListenerDelegate(service: service, ownerUID: uid_t(security.ownerUID))

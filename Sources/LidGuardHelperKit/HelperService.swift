@@ -34,6 +34,19 @@ public final class HelperService: NSObject, LidGuardHelperProtocol {
         }
     }
 
+    public func setOverheatProtection(
+        _ request: NSData,
+        withReply reply: @escaping (NSData?, NSString?) -> Void
+    ) {
+        respond(reply) {
+            let decoded = try LidGuardCoding.makeDecoder().decode(
+                OverheatProtectionRequest.self,
+                from: request as Data
+            )
+            return try engine.setOverheatProtection(request: decoded)
+        }
+    }
+
     private func respond<T: Encodable>(
         _ reply: @escaping (NSData?, NSString?) -> Void,
         operation: () throws -> T

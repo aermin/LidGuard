@@ -36,6 +36,8 @@ struct ParsedArguments {
                 "--json",
                 "--prevent-auto-lock",
                 "--allow-auto-lock",
+                "--enable",
+                "--disable",
             ].contains(argument) {
                 flags.insert(argument)
                 index += 1
@@ -60,6 +62,7 @@ let usage = """
   lidguard start --profile <strict|balanced|manual> (--for 2h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--prevent-auto-lock] [--confirm-risk]
   lidguard extend (--for 1h | --until <ISO8601> | --unlimited) [--battery <10-50|off>] [--prevent-auto-lock | --allow-auto-lock] [--confirm-risk]
   lidguard stop
+  lidguard overheat-protection <--enable|--disable>
   lidguard doctor
 """
 
@@ -121,6 +124,7 @@ func printStatus(_ status: StatusSnapshot) {
     print("状态：\(mode)")
     print("SleepDisabled：\(status.sleepDisabled.map { $0 ? "1" : "0" } ?? "未知")")
     print("防自动锁屏断言：\(status.automaticLockPreventionActive ? "生效" : "未启用")")
+    print("过热保护：\(status.overheatProtectionEnabled ? "已开启" : "已关闭")")
     print("热状态：\(status.thermalLevel.displayName)")
     if let percentage = status.battery.percentage {
         print("电量：\(percentage)%（\(status.battery.source.displayName)）")
@@ -206,6 +210,17 @@ func run() throws {
         printStatus(result.status)
     case "stop":
         let result = try client.stop()
+        print(result.message)
+        printStatus(result.status)
+    case "overheat-protection":
+        let enable = parsed.flags.contains("--enable")
+        let disable = parsed.flags.contains("--disable")
+        guard enable != disable else {
+            throw CLIError.usage("必须且只能指定 --enable 或 --disable")
+        }
+        let result = try client.setOverheatProtection(
+            OverheatProtectionRequest(enabled: enable)
+        )
         print(result.message)
         printStatus(result.status)
     case "doctor":

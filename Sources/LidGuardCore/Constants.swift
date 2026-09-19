@@ -1,8 +1,8 @@
 import Foundation
 
 public enum LidGuardConstants {
-    public static let protocolVersion = 2
-    public static let helperVersion = "1.1.0"
+    public static let protocolVersion = 3
+    public static let helperVersion = "1.2.0"
     public static let bundleIdentifier = "local.huangxiaomin.LidGuard"
     public static let helperLabel = "local.huangxiaomin.LidGuard.helper"
     public static let machServiceName = helperLabel
@@ -20,6 +20,12 @@ public enum LidGuardConstants {
     public static let strictMinimumDuration: TimeInterval = 30 * 60
     public static let strictMaximumDuration: TimeInterval = 8 * 60 * 60
     public static let maximumTimedDuration: TimeInterval = 7 * 24 * 60 * 60
+    public static let hotspotFairCPUThreshold = 80.0
+    public static let hotspotSeriousCPUThreshold = 50.0
+    public static let hotspotFairDuration: TimeInterval = 30
+    public static let hotspotSeriousDuration: TimeInterval = 15
+    public static let hotspotCriticalConfirmationDuration: TimeInterval = 5
+    public static let hotspotTerminationCooldown: TimeInterval = 30
 }
 
 public enum LidGuardCoding {

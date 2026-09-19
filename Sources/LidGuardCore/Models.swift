@@ -100,7 +100,30 @@ public enum GuardEventKind: String, Codable, Sendable {
     case fiveMinuteWarning
     case stopped
     case thermalWarning
+    case hotspotTerminated
     case error
+}
+
+public struct ProcessHotspot: Codable, Equatable, Sendable {
+    public var pid: Int32
+    public var processName: String
+    public var cpuPercent: Double
+    public var thermalLevel: ThermalLevel
+    public var terminatedAt: Date
+
+    public init(
+        pid: Int32,
+        processName: String,
+        cpuPercent: Double,
+        thermalLevel: ThermalLevel,
+        terminatedAt: Date = Date()
+    ) {
+        self.pid = pid
+        self.processName = processName
+        self.cpuPercent = cpuPercent
+        self.thermalLevel = thermalLevel
+        self.terminatedAt = terminatedAt
+    }
 }
 
 public struct GuardEvent: Codable, Equatable, Sendable {
@@ -196,6 +219,19 @@ public struct StopRequest: Codable, Equatable, Sendable {
     }
 }
 
+public struct OverheatProtectionRequest: Codable, Equatable, Sendable {
+    public var protocolVersion: Int
+    public var enabled: Bool
+
+    public init(
+        protocolVersion: Int = LidGuardConstants.protocolVersion,
+        enabled: Bool
+    ) {
+        self.protocolVersion = protocolVersion
+        self.enabled = enabled
+    }
+}
+
 public struct GuardSession: Codable, Equatable, Sendable {
     public var id: UUID
     public var profile: RunProfile
@@ -259,6 +295,8 @@ public struct PersistedState: Codable, Equatable, Sendable {
     public var lastStopReason: StopReason
     public var lastError: String?
     public var lastEvent: GuardEvent?
+    public var overheatProtectionEnabled: Bool
+    public var lastTerminatedHotspot: ProcessHotspot?
     public var lastChangedAt: Date
 
     public init(
@@ -267,6 +305,8 @@ public struct PersistedState: Codable, Equatable, Sendable {
         lastStopReason: StopReason = .none,
         lastError: String? = nil,
         lastEvent: GuardEvent? = nil,
+        overheatProtectionEnabled: Bool = false,
+        lastTerminatedHotspot: ProcessHotspot? = nil,
         lastChangedAt: Date = Date()
     ) {
         self.schemaVersion = schemaVersion
@@ -274,7 +314,38 @@ public struct PersistedState: Codable, Equatable, Sendable {
         self.lastStopReason = lastStopReason
         self.lastError = lastError
         self.lastEvent = lastEvent
+        self.overheatProtectionEnabled = overheatProtectionEnabled
+        self.lastTerminatedHotspot = lastTerminatedHotspot
         self.lastChangedAt = lastChangedAt
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case session
+        case lastStopReason
+        case lastError
+        case lastEvent
+        case overheatProtectionEnabled
+        case lastTerminatedHotspot
+        case lastChangedAt
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decodeIfPresent(Int.self, forKey: .schemaVersion) ?? 1
+        session = try container.decodeIfPresent(GuardSession.self, forKey: .session)
+        lastStopReason = try container.decodeIfPresent(StopReason.self, forKey: .lastStopReason) ?? .none
+        lastError = try container.decodeIfPresent(String.self, forKey: .lastError)
+        lastEvent = try container.decodeIfPresent(GuardEvent.self, forKey: .lastEvent)
+        overheatProtectionEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .overheatProtectionEnabled
+        ) ?? false
+        lastTerminatedHotspot = try container.decodeIfPresent(
+            ProcessHotspot.self,
+            forKey: .lastTerminatedHotspot
+        )
+        lastChangedAt = try container.decodeIfPresent(Date.self, forKey: .lastChangedAt) ?? Date()
     }
 }
 
@@ -284,12 +355,14 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
     public var mode: GuardMode
     public var sleepDisabled: Bool?
     public var automaticLockPreventionActive: Bool
+    public var overheatProtectionEnabled: Bool
     public var session: GuardSession?
     public var thermalLevel: ThermalLevel
     public var battery: BatterySnapshot
     public var lastStopReason: StopReason
     public var lastError: String?
     public var lastEvent: GuardEvent?
+    public var lastTerminatedHotspot: ProcessHotspot?
     public var observedAt: Date
 
     public init(
@@ -298,12 +371,14 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
         mode: GuardMode,
         sleepDisabled: Bool?,
         automaticLockPreventionActive: Bool,
+        overheatProtectionEnabled: Bool,
         session: GuardSession?,
         thermalLevel: ThermalLevel,
         battery: BatterySnapshot,
         lastStopReason: StopReason,
         lastError: String?,
         lastEvent: GuardEvent?,
+        lastTerminatedHotspot: ProcessHotspot?,
         observedAt: Date = Date()
     ) {
         self.protocolVersion = protocolVersion
@@ -311,12 +386,14 @@ public struct StatusSnapshot: Codable, Equatable, Sendable {
         self.mode = mode
         self.sleepDisabled = sleepDisabled
         self.automaticLockPreventionActive = automaticLockPreventionActive
+        self.overheatProtectionEnabled = overheatProtectionEnabled
         self.session = session
         self.thermalLevel = thermalLevel
         self.battery = battery
         self.lastStopReason = lastStopReason
         self.lastError = lastError
         self.lastEvent = lastEvent
+        self.lastTerminatedHotspot = lastTerminatedHotspot
         self.observedAt = observedAt
     }
 }

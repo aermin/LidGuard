@@ -239,6 +239,12 @@ final class AppStore: ObservableObject {
         }
     }
 
+    func setOverheatProtection(_ enabled: Bool) {
+        perform { client in
+            try client.setOverheatProtection(OverheatProtectionRequest(enabled: enabled))
+        }
+    }
+
     func setLaunchAtLogin(_ enabled: Bool) {
         launchAtLogin = enabled
         do {

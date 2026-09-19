@@ -51,6 +51,18 @@ public final class HelperClient {
         }
     }
 
+    public func setOverheatProtection(
+        _ request: OverheatProtectionRequest,
+        timeout: TimeInterval = 5
+    ) throws -> OperationResult {
+        let payload = try LidGuardCoding.makeEncoder().encode(request) as NSData
+        return try perform(timeout: timeout) { proxy, finish in
+            proxy.setOverheatProtection(payload) { data, error in
+                finish(Self.decode(OperationResult.self, data: data, error: error))
+            }
+        }
+    }
+
     private func perform<T>(
         timeout: TimeInterval,
         operation: (LidGuardHelperProtocol, @escaping (Result<T, Error>) -> Void) -> Void
