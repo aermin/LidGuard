@@ -9,7 +9,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 34 passing](https://img.shields.io/badge/tests-34%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 36 passing](https://img.shields.io/badge/tests-36%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
 Lid-closed operation · Optional automatic-lock prevention · Generic thermal hotspot protection · CLI
@@ -92,7 +92,7 @@ To create a local test DMG:
 make dmg
 ```
 
-The output is `dist/LidGuard-1.2.4-arm64.dmg`. Local test DMGs use ad-hoc signing.
+The output is `dist/LidGuard-1.2.5-arm64.dmg`. Local test DMGs use ad-hoc signing.
 
 ## Interface
 
@@ -140,6 +140,8 @@ The first-level **Thermal Hotspot Protection** switch is independent and persist
 - `critical`: at least 50% CPU continuously for 5 seconds.
 
 Before acting, LidGuard rechecks the PID, process start time, owner, and current CPU usage, then sends `SIGTERM` so the process can exit cleanly. If the same process remains after two seconds, LidGuard escalates to `SIGKILL`. The generic rule covers user-owned crash reporters, remote-control services, browser renderers, and similar hotspots. LidGuard itself, other users, and root system processes are excluded by default; the only exception is macOS's built-in `/System/Library/CoreServices/ReportCrash`, which can itself become stuck. A 30-second cooldown follows each action, and the result is recorded in the UI and notification history. The switch is off by default.
+
+Starting with 1.2.5, process sampling drains the complete process list while the child command is running and has a three-second timeout. A large process count or a stuck system sampling command can therefore no longer stop hotspot scans permanently; the next cycle retries automatically after a timeout.
 
 The CLI can also change it:
 

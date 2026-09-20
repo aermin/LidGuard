@@ -9,7 +9,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 34 passing](https://img.shields.io/badge/tests-34%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 36 passing](https://img.shields.io/badge/tests-36%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
 合盖持续运行 · 可选防自动锁屏 · 通用过热热点保护 · CLI
@@ -92,7 +92,7 @@ make install
 make dmg
 ```
 
-产物为 `dist/LidGuard-1.2.4-arm64.dmg`，本机测试 DMG 使用临时签名。
+产物为 `dist/LidGuard-1.2.5-arm64.dmg`，本机测试 DMG 使用临时签名。
 
 ## 界面
 
@@ -140,6 +140,8 @@ make dmg
 - `critical`（临界）：CPU 持续达到 50% 满 5 秒。
 
 确认热点后，LidGuard 先复核进程 PID、启动时间、所属用户和实时 CPU，再发送 `SIGTERM` 请求目标正常退出；若两秒后同一进程仍未退出，则升级为 `SIGKILL`。通用规则可以覆盖用户进程中的 `ReportCrash`、远程控制服务、浏览器页面等异常。LidGuard 自身、其他用户和 root 系统进程默认不会被选中；唯一例外是 macOS 自带且可能卡死的 `/System/Library/CoreServices/ReportCrash`。每次处理后至少等待 30 秒再处理下一个热点，并在界面和通知中记录结果。此功能默认关闭。
+
+从 1.2.5 起，进程采样会在子进程运行期间持续读取完整进程列表，并设置 3 秒超时。即使进程数量很多或系统采样命令异常卡住，也不会让过热保护永久停止扫描；超时后下一轮会自动重试。
 
 CLI 也可切换：
 

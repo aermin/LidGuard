@@ -1,6 +1,6 @@
 import Foundation
 import LidGuardCore
-import LidGuardHelperKit
+@_spi(Testing) import LidGuardHelperKit
 
 enum TestFailure: Error, LocalizedError {
     case failed(String)
@@ -125,6 +125,44 @@ final class TestRunner {
 }
 
 let runner = TestRunner()
+
+runner.run("process sampler drains output larger than the pipe buffer") {
+    let line = "42 501 95.0 Mon Sep 14 11:00:57 2026 /Applications/Example.app/Contents/MacOS/Example\n"
+    let lineCount = 4_000
+    let samples = try SystemProcessHotspotMonitor.readSamples(
+        executableURL: URL(fileURLWithPath: "/usr/bin/awk"),
+        arguments: ["BEGIN { for (i = 0; i < \(lineCount); i++) print \"\(line.trimmingCharacters(in: .newlines))\" }"],
+        timeout: 3
+    )
+    try runner.expect(samples.count == lineCount, "Large process output must be drained without deadlocking")
+}
+
+runner.run("process sampler times out and remains reusable") {
+    let start = Date()
+    do {
+        _ = try SystemProcessHotspotMonitor.readSamples(
+            executableURL: URL(fileURLWithPath: "/bin/sleep"),
+            arguments: ["5"],
+            timeout: 0.1
+        )
+        throw TestFailure.failed("Expected the slow sampler to time out")
+    } catch let error as TestFailure {
+        throw error
+    } catch {
+        try runner.expect(
+            Date().timeIntervalSince(start) < 2,
+            "A stuck process sampler must return promptly"
+        )
+    }
+
+    let samples = try SystemProcessHotspotMonitor.readSamples(
+        executableURL: URL(fileURLWithPath: "/bin/echo"),
+        arguments: ["43 501 91.0 Tue Sep 15 11:00:57 2026 /Applications/Recovered.app/Contents/MacOS/Recovered"],
+        timeout: 1
+    )
+    try runner.expect(samples.count == 1, "A timeout must not prevent the next scan")
+    try runner.expect(samples.first?.pid == 43, "The next scan must return fresh process data")
+}
 
 runner.run("system thermal pressure maps to protection levels") {
     try runner.expect(SystemSensors.mapThermalPressure(0) == .nominal, "Nominal pressure must remain nominal")

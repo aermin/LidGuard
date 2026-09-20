@@ -5,15 +5,26 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIGURATION="${CONFIGURATION:-debug}"
 SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
+PREBUILT_BIN_DIRECTORY="${PREBUILT_BIN_DIRECTORY:-}"
 DIST_DIRECTORY="$ROOT/dist"
 APP_BUNDLE="$DIST_DIRECTORY/LidGuard.app"
 
 cd "$ROOT"
-/usr/bin/swift build -c "$CONFIGURATION" --product LidGuardHelper
-/usr/bin/swift build -c "$CONFIGURATION" --product lidguard
-/usr/bin/swift build -c "$CONFIGURATION" --product LidGuardApp
+if [[ -n "$PREBUILT_BIN_DIRECTORY" ]]; then
+    BIN_DIRECTORY="$PREBUILT_BIN_DIRECTORY"
+else
+    /usr/bin/swift build -c "$CONFIGURATION" --product LidGuardHelper
+    /usr/bin/swift build -c "$CONFIGURATION" --product lidguard
+    /usr/bin/swift build -c "$CONFIGURATION" --product LidGuardApp
+    BIN_DIRECTORY="$(/usr/bin/swift build -c "$CONFIGURATION" --show-bin-path)"
+fi
 
-BIN_DIRECTORY="$(/usr/bin/swift build -c "$CONFIGURATION" --show-bin-path)"
+for binary in LidGuardHelper lidguard LidGuardApp; do
+    if [[ ! -x "$BIN_DIRECTORY/$binary" ]]; then
+        echo "Missing executable: $BIN_DIRECTORY/$binary" >&2
+        exit 1
+    fi
+done
 
 /bin/rm -rf "$APP_BUNDLE"
 /bin/mkdir -p \

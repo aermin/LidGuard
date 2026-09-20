@@ -127,6 +127,7 @@ public final class HotspotDetector {
 }
 
 public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
+    private static let processSampleTimeout: TimeInterval = 3
     private let ownerUID: UInt32
     private let detector: HotspotDetector
     private let sampleReader: () throws -> [ProcessSample]
@@ -146,7 +147,7 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
     ) {
         self.ownerUID = ownerUID
         self.detector = detector
-        self.sampleReader = sampleReader ?? Self.readSamples
+        self.sampleReader = sampleReader ?? { try Self.readSamples() }
         self.signalSender = signalSender
         self.wait = wait
     }
@@ -232,27 +233,72 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
     }
 
     private static func readSamples() throws -> [ProcessSample] {
+        try readSamples(
+            executableURL: URL(fileURLWithPath: "/bin/ps"),
+            arguments: ["-axo", "pid=,uid=,%cpu=,lstart=,comm="],
+            timeout: processSampleTimeout
+        )
+    }
+
+    @_spi(Testing)
+    public static func readSamples(
+        executableURL: URL,
+        arguments: [String],
+        timeout: TimeInterval
+    ) throws -> [ProcessSample] {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/bin/ps")
-        process.arguments = ["-axo", "pid=,uid=,%cpu=,lstart=,comm="]
+        process.executableURL = executableURL
+        process.arguments = arguments
         process.environment = ["LC_ALL": "C", "LANG": "C", "PATH": "/usr/bin:/bin"]
         process.standardOutput = outputPipe
         process.standardError = errorPipe
+
+        let outputReaders = DispatchGroup()
+        let terminationSemaphore = DispatchSemaphore(value: 0)
+        let capturedOutput = CapturedProcessOutput()
+        process.terminationHandler = { _ in terminationSemaphore.signal() }
         try process.run()
-        process.waitUntilExit()
+
+        // Drain both pipes while the child is running. Waiting for termination first can
+        // deadlock once a large process list fills the finite stdout pipe buffer.
+        outputReaders.enter()
+        DispatchQueue.global(qos: .utility).async {
+            capturedOutput.setStandardOutput(
+                outputPipe.fileHandleForReading.readDataToEndOfFile()
+            )
+            outputReaders.leave()
+        }
+        outputReaders.enter()
+        DispatchQueue.global(qos: .utility).async {
+            capturedOutput.setStandardError(
+                errorPipe.fileHandleForReading.readDataToEndOfFile()
+            )
+            outputReaders.leave()
+        }
+
+        guard terminationSemaphore.wait(timeout: .now() + timeout) == .success else {
+            process.terminate()
+            if terminationSemaphore.wait(timeout: .now() + 0.2) == .timedOut {
+                if process.isRunning {
+                    Darwin.kill(process.processIdentifier, SIGKILL)
+                }
+                _ = terminationSemaphore.wait(timeout: .now() + 1)
+            }
+            _ = outputReaders.wait(timeout: .now() + 1)
+            throw ProcessMonitorError.samplingTimedOut
+        }
+        outputReaders.wait()
 
         guard process.terminationStatus == 0 else {
-            let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
-            let message = String(decoding: data, as: UTF8.self)
+            let message = String(decoding: capturedOutput.standardError, as: UTF8.self)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             throw ProcessMonitorError.samplingFailed(message)
         }
 
-        let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(decoding: data, as: UTF8.self)
-        return output.split(whereSeparator: \.isNewline).compactMap(parseSample)
+        let text = String(decoding: capturedOutput.standardOutput, as: UTF8.self)
+        return text.split(whereSeparator: \.isNewline).compactMap(parseSample)
     }
 
     private static func parseSample(_ line: Substring) -> ProcessSample? {
@@ -273,13 +319,39 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
     }
 }
 
+private final class CapturedProcessOutput: @unchecked Sendable {
+    private let lock = NSLock()
+    private var output = Data()
+    private var error = Data()
+
+    var standardOutput: Data { synchronized { output } }
+    var standardError: Data { synchronized { error } }
+
+    func setStandardOutput(_ data: Data) {
+        synchronized { output = data }
+    }
+
+    func setStandardError(_ data: Data) {
+        synchronized { error = data }
+    }
+
+    private func synchronized<T>(_ body: () -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return body()
+    }
+}
+
 private enum ProcessMonitorError: Error, LocalizedError {
     case samplingFailed(String)
+    case samplingTimedOut
 
     var errorDescription: String? {
         switch self {
         case let .samplingFailed(message):
             return message.isEmpty ? "ps returned a non-zero status" : message
+        case .samplingTimedOut:
+            return "ps did not finish within the process sampling timeout"
         }
     }
 }
