@@ -2,13 +2,30 @@ import Foundation
 import IOKit.ps
 import LidGuardCore
 
+@_silgen_name("notify_register_check")
+private func notifyRegisterCheck(_ name: UnsafePointer<CChar>, _ token: UnsafeMutablePointer<Int32>) -> UInt32
+
+@_silgen_name("notify_get_state")
+private func notifyGetState(_ token: Int32, _ state: UnsafeMutablePointer<UInt64>) -> UInt32
+
+@_silgen_name("notify_cancel")
+private func notifyCancel(_ token: Int32) -> UInt32
+
 public protocol SensorReading: AnyObject {
     func currentBattery() -> BatterySnapshot
     func currentThermalLevel() -> ThermalLevel
 }
 
 public final class SystemSensors: SensorReading {
-    public init() {}
+    private let thermalPressureLevel: () -> UInt64?
+
+    public init() {
+        thermalPressureLevel = SystemThermalPressure.currentLevel
+    }
+
+    public init(thermalPressureLevel: @escaping () -> UInt64?) {
+        self.thermalPressureLevel = thermalPressureLevel
+    }
 
     public func currentBattery() -> BatterySnapshot {
         guard let infoReference = IOPSCopyPowerSourcesInfo() else {
@@ -51,12 +68,47 @@ public final class SystemSensors: SensorReading {
     }
 
     public func currentThermalLevel() -> ThermalLevel {
+        let processLevel: ThermalLevel
         switch ProcessInfo.processInfo.thermalState {
-        case .nominal: return .nominal
-        case .fair: return .fair
-        case .serious: return .serious
-        case .critical: return .critical
-        @unknown default: return .unknown
+        case .nominal: processLevel = .nominal
+        case .fair: processLevel = .fair
+        case .serious: processLevel = .serious
+        case .critical: processLevel = .critical
+        @unknown default: processLevel = .unknown
         }
+
+        guard let pressureLevel = thermalPressureLevel(),
+              let systemLevel = Self.mapThermalPressure(pressureLevel) else {
+            return processLevel
+        }
+        return max(processLevel, systemLevel)
+    }
+
+    public static func mapThermalPressure(_ level: UInt64) -> ThermalLevel? {
+        switch level {
+        case 0: return .nominal
+        case 1: return .fair
+        case 2: return .serious
+        case 3...: return .critical
+        default: return nil
+        }
+    }
+}
+
+private enum SystemThermalPressure {
+    private static let notificationName = "com.apple.system.thermalpressurelevel"
+
+    static func currentLevel() -> UInt64? {
+        var token: Int32 = 0
+        guard notifyRegisterCheck(notificationName, &token) == 0 else {
+            return nil
+        }
+        defer { _ = notifyCancel(token) }
+
+        var state: UInt64 = 0
+        guard notifyGetState(token, &state) == 0 else {
+            return nil
+        }
+        return state
     }
 }

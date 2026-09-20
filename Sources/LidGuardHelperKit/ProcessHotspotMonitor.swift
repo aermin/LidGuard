@@ -67,7 +67,7 @@ public final class HotspotDetector {
         }
 
         let eligible = samples.filter { sample in
-            sample.uid == ownerUID
+            Self.isAllowedOwner(sample, ownerUID: ownerUID)
                 && sample.pid > 1
                 && sample.cpuPercent >= policy.cpuThreshold
                 && !Self.isProtected(sample)
@@ -119,17 +119,36 @@ public final class HotspotDetector {
         }
         return sample.command.lowercased().contains("/lidguard.app/")
     }
+
+    static func isAllowedOwner(_ sample: ProcessSample, ownerUID: UInt32) -> Bool {
+        sample.uid == ownerUID
+            || (sample.uid == 0 && sample.command == "/System/Library/CoreServices/ReportCrash")
+    }
 }
 
 public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
     private let ownerUID: UInt32
     private let detector: HotspotDetector
+    private let sampleReader: () throws -> [ProcessSample]
+    private let signalSender: (Int32, Int32) -> Bool
+    private let wait: (TimeInterval) -> Void
     private let logger = Logger(subsystem: LidGuardConstants.bundleIdentifier, category: "hotspot")
     private var lastTerminationAt: Date?
 
-    public init(ownerUID: UInt32, detector: HotspotDetector = HotspotDetector()) {
+    public init(
+        ownerUID: UInt32,
+        detector: HotspotDetector = HotspotDetector(),
+        sampleReader: (() throws -> [ProcessSample])? = nil,
+        signalSender: @escaping (Int32, Int32) -> Bool = { pid, signal in
+            Darwin.kill(pid, signal) == 0
+        },
+        wait: @escaping (TimeInterval) -> Void = Thread.sleep(forTimeInterval:)
+    ) {
         self.ownerUID = ownerUID
         self.detector = detector
+        self.sampleReader = sampleReader ?? Self.readSamples
+        self.signalSender = signalSender
+        self.wait = wait
     }
 
     public func evaluate(thermalLevel: ThermalLevel, enabled: Bool, now: Date) -> ProcessHotspot? {
@@ -147,7 +166,7 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
         }
 
         do {
-            let samples = try readSamples()
+            let samples = try sampleReader()
             guard let candidate = detector.candidate(
                 from: samples,
                 ownerUID: ownerUID,
@@ -159,17 +178,33 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
 
             // Re-read immediately before signaling. Matching both PID and start time prevents
             // terminating an unrelated process if macOS has already recycled the PID.
-            guard let current = try readSamples().first(where: {
+            guard let current = try sampleReader().first(where: {
                 $0.pid == candidate.pid && $0.startIdentity == candidate.startIdentity
-            }), current.uid == ownerUID, current.cpuPercent >= policy.cpuThreshold else {
+            }), HotspotDetector.isAllowedOwner(current, ownerUID: ownerUID),
+                current.cpuPercent >= policy.cpuThreshold else {
                 return nil
             }
 
-            guard Darwin.kill(candidate.pid, SIGTERM) == 0 else {
+            guard signalSender(candidate.pid, SIGTERM) else {
                 logger.error(
                     "Unable to terminate PID \(candidate.pid): errno \(errno)"
                 )
                 return nil
+            }
+
+            wait(LidGuardConstants.hotspotTerminationGracePeriod)
+            if try isSameProcessRunning(candidate) {
+                guard signalSender(candidate.pid, SIGKILL) else {
+                    logger.error(
+                        "Unable to force terminate PID \(candidate.pid): errno \(errno)"
+                    )
+                    return nil
+                }
+                wait(LidGuardConstants.hotspotForceTerminationCheckDelay)
+                guard try !isSameProcessRunning(candidate) else {
+                    logger.error("PID \(candidate.pid) remained alive after SIGKILL")
+                    return nil
+                }
             }
 
             lastTerminationAt = now
@@ -190,7 +225,13 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
         }
     }
 
-    private func readSamples() throws -> [ProcessSample] {
+    private func isSameProcessRunning(_ candidate: ProcessSample) throws -> Bool {
+        try sampleReader().contains {
+            $0.pid == candidate.pid && $0.startIdentity == candidate.startIdentity
+        }
+    }
+
+    private static func readSamples() throws -> [ProcessSample] {
         let process = Process()
         let outputPipe = Pipe()
         let errorPipe = Pipe()
@@ -214,7 +255,7 @@ public final class SystemProcessHotspotMonitor: ProcessHotspotMonitoring {
         return output.split(whereSeparator: \.isNewline).compactMap(parseSample)
     }
 
-    private func parseSample(_ line: Substring) -> ProcessSample? {
+    private static func parseSample(_ line: Substring) -> ProcessSample? {
         let fields = line.split(omittingEmptySubsequences: true, whereSeparator: \.isWhitespace)
         guard fields.count >= 9,
               let pid = Int32(fields[0]),

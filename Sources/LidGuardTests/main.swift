@@ -126,6 +126,22 @@ final class TestRunner {
 
 let runner = TestRunner()
 
+runner.run("system thermal pressure maps to protection levels") {
+    try runner.expect(SystemSensors.mapThermalPressure(0) == .nominal, "Nominal pressure must remain nominal")
+    try runner.expect(SystemSensors.mapThermalPressure(1) == .fair, "Moderate pressure must start fair protection")
+    try runner.expect(SystemSensors.mapThermalPressure(2) == .serious, "Heavy pressure must start serious protection")
+    try runner.expect(SystemSensors.mapThermalPressure(3) == .critical, "Trapping pressure must be critical")
+    try runner.expect(SystemSensors.mapThermalPressure(4) == .critical, "Sleeping pressure must be critical")
+}
+
+runner.run("system thermal pressure supplements ProcessInfo") {
+    let sensors = SystemSensors(thermalPressureLevel: { 2 })
+    try runner.expect(
+        sensors.currentThermalLevel() >= .serious,
+        "Heavy system pressure must not be hidden by a nominal ProcessInfo state"
+    )
+}
+
 runner.run("strict requires deadline") {
     try runner.expectThrows(PolicyError.strictRequiresDeadline) {
         _ = try SessionPolicy.makeSession(from: SessionRequest(profile: .strict, deadline: nil))
@@ -258,7 +274,7 @@ runner.run("hotspot detector uses tighter serious threshold") {
     try runner.expect(candidate == sample, "Serious pressure must detect sustained 50% CPU load")
 }
 
-runner.run("hotspot detector protects LidGuard and other users") {
+runner.run("hotspot detector protects LidGuard and unapproved system processes") {
     let detector = HotspotDetector()
     let start = Date(timeIntervalSince1970: 3_000)
     let samples = [
@@ -276,7 +292,89 @@ runner.run("hotspot detector protects LidGuard and other users") {
         thermalLevel: .critical,
         now: start.addingTimeInterval(5)
     )
-    try runner.expect(candidate == nil, "Protected and non-owner processes must never be selected")
+    try runner.expect(candidate == nil, "Protected and unapproved system processes must never be selected")
+}
+
+runner.run("hotspot detector permits the system crash reporter") {
+    let detector = HotspotDetector()
+    let start = Date(timeIntervalSince1970: 4_000)
+    let sample = ProcessSample(
+        pid: 22,
+        uid: 0,
+        cpuPercent: 95,
+        startIdentity: "root-report-crash",
+        command: "/System/Library/CoreServices/ReportCrash"
+    )
+    _ = detector.candidate(from: [sample], ownerUID: 501, thermalLevel: .critical, now: start)
+    let candidate = detector.candidate(
+        from: [sample],
+        ownerUID: 501,
+        thermalLevel: .critical,
+        now: start.addingTimeInterval(5)
+    )
+    try runner.expect(candidate == sample, "The root crash reporter must remain recoverable")
+}
+
+runner.run("hotspot monitor escalates when graceful termination is ignored") {
+    let sample = ProcessSample(
+        pid: 23,
+        uid: 501,
+        cpuPercent: 95,
+        startIdentity: "stuck-process",
+        command: "/Applications/Example.app/Contents/MacOS/Example"
+    )
+    var samples = [sample]
+    var signals: [Int32] = []
+    let monitor = SystemProcessHotspotMonitor(
+        ownerUID: 501,
+        sampleReader: { samples },
+        signalSender: { _, signal in
+            signals.append(signal)
+            if signal == SIGKILL { samples = [] }
+            return true
+        },
+        wait: { _ in }
+    )
+    let start = Date(timeIntervalSince1970: 5_000)
+    _ = monitor.evaluate(thermalLevel: .critical, enabled: true, now: start)
+    let hotspot = monitor.evaluate(
+        thermalLevel: .critical,
+        enabled: true,
+        now: start.addingTimeInterval(5)
+    )
+    try runner.expect(signals == [SIGTERM, SIGKILL], "Ignored SIGTERM must escalate to SIGKILL")
+    try runner.expect(hotspot?.pid == sample.pid, "Successful escalation must be recorded")
+}
+
+runner.run("hotspot monitor can terminate the root crash reporter") {
+    let sample = ProcessSample(
+        pid: 24,
+        uid: 0,
+        cpuPercent: 95,
+        startIdentity: "root-report-crash-monitor",
+        command: "/System/Library/CoreServices/ReportCrash"
+    )
+    var samples = [sample]
+    var signals: [Int32] = []
+    let monitor = SystemProcessHotspotMonitor(
+        ownerUID: 501,
+        sampleReader: { samples },
+        signalSender: { _, signal in
+            signals.append(signal)
+            samples = []
+            return true
+        },
+        wait: { _ in }
+    )
+    let start = Date(timeIntervalSince1970: 6_000)
+    _ = monitor.evaluate(thermalLevel: .critical, enabled: true, now: start)
+    let hotspot = monitor.evaluate(
+        thermalLevel: .critical,
+        enabled: true,
+        now: start.addingTimeInterval(5)
+    )
+    try runner.expect(signals == [SIGTERM], "The helper must signal the root crash reporter")
+    try runner.expect(hotspot?.pid == sample.pid, "The root crash reporter action must be recorded")
 }
 
 runner.run("manual accepts enabled battery threshold") {

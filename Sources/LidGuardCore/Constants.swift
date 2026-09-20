@@ -2,7 +2,7 @@ import Foundation
 
 public enum LidGuardConstants {
     public static let protocolVersion = 3
-    public static let helperVersion = "1.2.3"
+    public static let helperVersion = "1.2.4"
     public static let bundleIdentifier = "local.huangxiaomin.LidGuard"
     public static let helperLabel = "local.huangxiaomin.LidGuard.helper"
     public static let machServiceName = helperLabel
@@ -26,6 +26,8 @@ public enum LidGuardConstants {
     public static let hotspotSeriousDuration: TimeInterval = 15
     public static let hotspotCriticalConfirmationDuration: TimeInterval = 5
     public static let hotspotTerminationCooldown: TimeInterval = 30
+    public static let hotspotTerminationGracePeriod: TimeInterval = 2
+    public static let hotspotForceTerminationCheckDelay: TimeInterval = 0.2
 }
 
 public enum LidGuardCoding {

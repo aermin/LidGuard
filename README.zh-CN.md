@@ -9,7 +9,7 @@
 [![macOS 13+](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple)](https://github.com/aermin/LidGuard)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-0A84FF)](https://github.com/aermin/LidGuard)
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-F05138?logo=swift&logoColor=white)](https://github.com/aermin/LidGuard)
-[![Tests 28 passing](https://img.shields.io/badge/tests-28%20passing-22C55E)](https://github.com/aermin/LidGuard)
+[![Tests 34 passing](https://img.shields.io/badge/tests-34%20passing-22C55E)](https://github.com/aermin/LidGuard)
 [![License MIT](https://img.shields.io/badge/license-MIT-2EA44F)](LICENSE)
 
 合盖持续运行 · 可选防自动锁屏 · 通用过热热点保护 · CLI
@@ -92,7 +92,7 @@ make install
 make dmg
 ```
 
-产物为 `dist/LidGuard-1.2.3-arm64.dmg`，本机测试 DMG 使用临时签名。
+产物为 `dist/LidGuard-1.2.4-arm64.dmg`，本机测试 DMG 使用临时签名。
 
 ## 界面
 
@@ -133,13 +133,13 @@ make dmg
 
 ## 通用过热保护
 
-一级面板中的“过热保护”是独立常驻开关，不要求正在进行合盖运行会话。开启后，Helper 每 5 秒读取 macOS 热压力与当前登录用户的进程 CPU 占用：
+一级面板中的“过热保护”是独立常驻开关，不要求正在进行合盖运行会话。开启后，Helper 每 5 秒综合读取 macOS 系统热压力通知与 `ProcessInfo.thermalState`，并检查当前登录用户的进程 CPU 占用：
 
 - `fair`（升温）：CPU 持续达到 80% 满 30 秒。
 - `serious`（严重）：CPU 持续达到 50% 满 15 秒。
 - `critical`（临界）：CPU 持续达到 50% 满 5 秒。
 
-确认热点后，LidGuard 先复核进程 PID、启动时间、所属用户和实时 CPU，再发送 `SIGTERM` 请求目标正常退出。它不按应用名称写死规则，因此可以覆盖 `ReportCrash`、远程控制服务、浏览器页面等不同异常；LidGuard 自身、其他用户和 root 系统进程不会被选中。每次处理后至少等待 30 秒再处理下一个热点，并在界面和通知中记录结果。此功能默认关闭。
+确认热点后，LidGuard 先复核进程 PID、启动时间、所属用户和实时 CPU，再发送 `SIGTERM` 请求目标正常退出；若两秒后同一进程仍未退出，则升级为 `SIGKILL`。通用规则可以覆盖用户进程中的 `ReportCrash`、远程控制服务、浏览器页面等异常。LidGuard 自身、其他用户和 root 系统进程默认不会被选中；唯一例外是 macOS 自带且可能卡死的 `/System/Library/CoreServices/ReportCrash`。每次处理后至少等待 30 秒再处理下一个热点，并在界面和通知中记录结果。此功能默认关闭。
 
 CLI 也可切换：
 
@@ -243,7 +243,7 @@ LidGuard 有意不安装 Codex hooks。Agent 可以显式调用 CLI，但任务�
 自动测试覆盖策略矩阵、定时解析、低电量、macOS 四级热状态、状态恢复、外部覆盖和 `pmset` 验证失败。测试使用模拟的电源控制器与传感器，不会修改真实系统电源状态。
 
 ```text
-Tests: 29 passed, 0 failed
+Tests: 34 passed, 0 failed
 ```
 
 当前开发机已验证：
@@ -262,7 +262,7 @@ Tests: 29 passed, 0 failed
 > [!IMPORTANT]
 > Apple 没有将 `pmset disablesleep` 作为稳定的公开接口提供文档。每次升级 macOS 后，都应重新验证合盖、唤醒和远程控制行为。
 
-- LidGuard 读取 `ProcessInfo.thermalState` 报告的系统热压力等级，不读取私有 SMC 摄氏温度。
+- LidGuard 综合读取 macOS 系统热压力通知与 `ProcessInfo.thermalState`，取较严重的等级；它不读取私有 SMC 摄氏温度。
 - 防自动锁屏会保持显示器唤醒并增加耗电；用户主动锁屏及其他安全操作不会被阻止。
 
 ## 项目结构
